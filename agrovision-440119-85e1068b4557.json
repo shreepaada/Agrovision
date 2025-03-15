@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "agrovision-440119",
+  "private_key_id": "85e1068b4557b386a10894e99e21523570b2fed2",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDgs3aoQ/gZtlLF\n/Mh+AS+2RsJVLd48LoBMkOKGMhHWRr+Tr5Pf/MyU4eEs6rTw56dEdCD/60s7HnLG\n1UBZCBLluNO1ZquIeMHB/Mn2fIz1Xo4/+ij1r/gQ0+ctWylLzvnRKCAgyV90K0vv\njKzdceSF9w/6dVaDRo0fhrnRZFR6+L6PRk6yiAlE/Em3yBWSwUTtt76kyiEm4F+z\nj2E1TzVnDyJqA5hqpbz8jptDKVR3e7EJQS6xnToray/YI8irIK42mg5ysmkfhrf7\ntgzznIi8lvvvpdCnKGcen5orTEUJiSl6e3biiy6DipaczN/GJXuoU4pEeJZNw7WE\n91hZ0RrnAgMBAAECggEAbP/BbIhkHpzp9C7WVwFeUq5qcIVqi4kHJZ0WtYAuVOJG\n5m5CbmIkH4ifAXntQfstkbA/ncVW3hu8E6W4rDeVayhIUnO2e+IQI3jrw4zRl+lB\nWdmQ6vVsgUU5nC/fjW2ek45CX4Uvr5udH1v/MwCfmTiq4JTw3Ydox8VD+EYSEQAW\nRM1+Tr/QCjw48NuEwXWjHYTBHTv+tV6ZGIAiwDDQFZfkdO/5WRICMG8fxvA3H1Jc\nRAXUOUy1T6WEhJ7ugEvrT15arSVPYS4F63mNPo/EQrZdxaV61N70OMAr8rJIvz3u\nMPQu+JSMROGYMac4XHVUpllPqOf8qqDvrChwvh9HCQKBgQDyQO38q7waswZ9vP23\nOzT0HiL9+44E+TwDdqzBH6AnvDi7aZ3l2kZ4CclzqeIG0AQjkFtxqhahKag9l6nn\nd6pppWJC3DVnp/zrZ3EgRKLDlvvIz7mUGLcm+SkGFUDI6fh/HpJVM4viTbHo3gaw\nVw2rPX7zGVGM/3lBX2pZ7DTv3QKBgQDtc47V6PPmDNUiUaRfF081PM631eTDmMmR\nTbq7Ewm7Puq16QiAp1PEpI2CcpX8F9po2qGH6+fqmdgbcJQjYinkZI+bwmxhhbtU\ncEMlrcimlVz3If2DeQhClrISzYNmh7Ie2UlaRWQwmkNqS3ELi8+hO0/45rEyuTE0\n1iCK1jJrkwKBgQDNXAVi4CJBb+ncxU0++s3U84cuTwUBalZZiUzBGhImHQTquonD\nw9lhAMrpZeXZaJVZoJIkNM+iJzIbpGm/ck3f6Pb3Pr129Y0N8U6Q0B46N8+RV6Y1\nyQ3Z1/XS1klpCA5DlKLv3xaB7OMYSL7a1bEcrLDlW10qbZdYt43sVLQ7cQKBgCrn\n0I1ydG/DLdfvrKXKDnPuMuQg8B8vwmxRAUbAX+fHrJ2GKBUnJwnHOhKyJcvRe5Oq\nvblTtSo89kGvC/WAzVUJnrFkZjUQ9xKA3oE2b6U6I/w71hUlj4qItFCVdgLWziao\n2IpJM5tcpIXWb+zILJJTp1WwSaCCuhN0BZlQrvelAoGBAJ6CYROMB7mozCAY8ocv\ns9Dp1+k2Ky/yWdWzleXA4ODQH6Nwa2kYuzIqXhjk08JZT+aO0zGFl/YW9PqOnD5F\nKfJs0YpMGvCXVvifVOQmqKJiV6+QUZmEGo3fBxeBAsypPSAGOU4ut+LU9PNhP0Hw\ntJwaXCEvNjuKnErL1tdz6QC4\n-----END PRIVATE KEY-----\n",
+  "client_email": "agrovision-earth-engine@agrovision-440119.iam.gserviceaccount.com",
+  "client_id": "103599616515839685081",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/agrovision-earth-engine%40agrovision-440119.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
