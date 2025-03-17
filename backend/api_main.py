@@ -1,8 +1,10 @@
-from flask import Flask, request, jsonify  # ADDED: Flask for API
+from flask import Flask, request, jsonify
 import ee
+import os
+import json
 import requests
 
-app = Flask(__name__)  # ADDED: Flask app initialization
+app = Flask(__name__)
 
 # Default soil values for different states in India
 soil_default_values = {
@@ -44,20 +46,27 @@ soil_default_values = {
     "Puducherry": {"pH": 7.30, "Nitrogen": 190}
 }
 
-# ✅ Initialize Google Earth Engine (GEE)
+# Initialize Google Earth Engine (GEE) using environment variable credentials
 try:
-    ee.Initialize(project='tejaldaivajna8-test1')
-except Exception:
-    ee.Authenticate()
-    ee.Initialize(project='tejaldaivajna8-test1')
+    # Load credentials from environment variable
+    ee_credentials = os.getenv("EE_CREDENTIALS")
+    if ee_credentials:
+        credentials = json.loads(ee_credentials)
+        ee.Initialize(credentials=ee.ServiceAccountCredentials(
+            credentials["client_email"],
+            key_data=ee_credentials
+        ))
+    else:
+        raise ValueError("Earth Engine credentials not found in environment variables.")
+except Exception as e:
+    print(f"Error initializing Earth Engine: {e}")
+    raise
 
-
-@app.route("/")  # ADDED: Route to check if API is running
+@app.route("/")  # Route to check if API is running
 def home():
     return jsonify({"message": "Welcome to AgroVision API!"})
 
-
-@app.route("/crop_features", methods=["GET"])  # ADDED: API endpoint for fetching crop features
+@app.route("/crop_features", methods=["GET"])  # Endpoint for fetching crop features
 def crop_features():
     try:
         # Parse query parameters
@@ -75,7 +84,6 @@ def crop_features():
         return jsonify({"error": f"Invalid input: {str(ve)}"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 def get_ndvi(lat, lon, date="2024-03-01"):
     point = ee.Geometry.Point(lon, lat)
@@ -97,7 +105,6 @@ def get_ndvi(lat, lon, date="2024-03-01"):
 
     return ndvi / 10000 if ndvi else None
 
-
 def get_soil_ph(lat, lon):
     url = f"https://rest.isric.org/soilgrids/v2.0/properties/query?lon={lon}&lat={lat}&property=phh2o&depth=0-5cm&value=mean"
     response = requests.get(url)
@@ -110,7 +117,6 @@ def get_soil_ph(lat, lon):
         return data["properties"]["layers"][0]["depths"][0]["values"]["mean"] / 10
     except Exception:
         return None
-
 
 def get_soil_nitrogen(lat, lon):
     url = f"https://rest.isric.org/soilgrids/v2.0/properties/query?lon={lon}&lat={lat}&property=nitrogen&depth=0-5cm&value=mean"
@@ -125,7 +131,6 @@ def get_soil_nitrogen(lat, lon):
     except Exception:
         return None
 
-
 def get_state_opencage(lat, lon, api_key):
     url = f"https://api.opencagedata.com/geocode/v1/json?q={lat}+{lon}&key={api_key}"
     response = requests.get(url)
@@ -137,7 +142,6 @@ def get_state_opencage(lat, lon, api_key):
                 return data["results"][0]["components"]["state"]
     return "State not found"
 
-
 def get_soil_features_with_fallback(lat, lon, api_key):
     ph_value = get_soil_ph(lat, lon)
     nitrogen_value = get_soil_nitrogen(lat, lon)
@@ -145,7 +149,6 @@ def get_soil_features_with_fallback(lat, lon, api_key):
     if ph_value is not None and nitrogen_value is not None:
         return {"pH": ph_value, "Nitrogen": nitrogen_value}
 
-    print("Falling back to default state-wise soil values...")
     state_name = get_state_opencage(lat, lon, api_key)
 
     if state_name and state_name in soil_default_values:
@@ -154,9 +157,7 @@ def get_soil_features_with_fallback(lat, lon, api_key):
             "Nitrogen": nitrogen_value if nitrogen_value is not None else soil_default_values[state_name]["Nitrogen"]
         }
 
-    print("Warning: State not found in default values. Returning None.")
     return {"pH": None, "Nitrogen": None}
-
 
 def get_weather(lat, lon, start_date="2024-03-01"):
     url = f"https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,RH2M,PRECTOTCORR&community=AG&longitude={lon}&latitude={lat}&start={start_date.replace('-', '')}&end={start_date.replace('-', '')}&format=JSON"
@@ -172,7 +173,6 @@ def get_weather(lat, lon, start_date="2024-03-01"):
         }
 
     return None
-
 
 def get_crop_features(lat, lon, api_key, date="2024-03-01"):
     # Fetch NDVI
@@ -194,11 +194,9 @@ def get_crop_features(lat, lon, api_key, date="2024-03-01"):
         "Rainfall (mm)": weather["rainfall"] if weather else None,
     }
 
-
-# ✅ ADDED: Make sure Flask runs properly on Render
+# Ensure Flask runs properly on Render
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
-
+    app.run(debug=True, host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
 
 # import ee
 # import geemap
