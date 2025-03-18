@@ -1,4 +1,5 @@
 import os
+import json
 import ee
 import requests
 from flask import Flask, request, jsonify
@@ -12,16 +13,22 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Get the service account JSON path from environment variable
-service_account_file = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-if not service_account_file:
-    raise ValueError("Error: GOOGLE_APPLICATION_CREDENTIALS not found in environment variables.")
+# Get the service account JSON path from the secret file
+service_account_file = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "/etc/secrets/gee-api.json")
 
+if not os.path.exists(service_account_file):
+    raise FileNotFoundError(f"❌ Error: Service account file '{service_account_file}' does not exist!")
+
+# Read the service account JSON file and authenticate Google Earth Engine
 try:
-    # Authenticate using the service account
-    credentials = ee.ServiceAccountCredentials(service_account_file)
+    with open(service_account_file, "r") as f:
+        service_account_json = json.load(f)
+
+    # Authenticate Google Earth Engine
+    credentials = ee.ServiceAccountCredentials(service_account_json["client_email"], service_account_file)
     ee.Initialize(credentials)
     print("✅ Google Earth Engine Initialized Successfully!")
+
 except Exception as e:
     print(f"❌ Error initializing Google Earth Engine: {e}")
     raise RuntimeError("Failed to initialize Google Earth Engine. Check your service account credentials.")
