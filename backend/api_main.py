@@ -2,27 +2,34 @@ import os
 import ee
 import requests
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from dotenv import load_dotenv
-from flask_cors import CORS 
 
 # Load environment variables from .env file
 load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app) 
+CORS(app)
+
+# Get the service account JSON path from environment variable
+service_account_file = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+if not service_account_file:
+    raise ValueError("Error: GOOGLE_APPLICATION_CREDENTIALS not found in environment variables.")
+
+try:
+    # Authenticate using the service account
+    credentials = ee.ServiceAccountCredentials(service_account_file)
+    ee.Initialize(credentials)
+    print("✅ Google Earth Engine Initialized Successfully!")
+except Exception as e:
+    print(f"❌ Error initializing Google Earth Engine: {e}")
+    raise RuntimeError("Failed to initialize Google Earth Engine. Check your service account credentials.")
 
 # Retrieve API key from environment variable
 api_key = os.getenv("OPENCAGE_API_KEY")
 if not api_key:
     raise ValueError("Error: OPENCAGE_API_KEY not found in environment variables.")
-
-# Authenticate and initialize Google Earth Engine
-try:
-    ee.Initialize(project='tejaldaivajna8-test1')
-except Exception as e:
-    ee.Authenticate()
-    ee.Initialize(project='tejaldaivajna8-test1')
 
 # Default soil values for Indian states
 soil_default_values = {
