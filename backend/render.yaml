@@ -1,8 +1,10 @@
 services:
   - type: web
     name: crop-prediction-api
-    env: docker  # 🚨 Use "docker" instead of "python"
-    dockerfilePath: ./Dockerfile
+    env: python
+    runtime: python3.11  # Ensure correct Python version
+    buildCommand: "pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt"
+    startCommand: "gunicorn api_main:app"
     envVars:
       - key: OPENCAGE_API_KEY
         sync: false

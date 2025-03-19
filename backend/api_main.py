@@ -57,12 +57,21 @@ soil_default_values = {
     "Puducherry": {"pH": 7.30, "Nitrogen": 190}
 }
 
-# Authenticate and initialize GEE
+# Authenticate and initialize GEE using Service Account
 try:
-    ee.Initialize(project='tejaldaivajna8-test1')
+    credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    
+    if credentials_path and os.path.exists(credentials_path):
+        print(f"✅ Found GEE credentials at {credentials_path}")
+
+        # Authenticate using Service Account JSON (No `gcloud` required)
+        credentials = ee.ServiceAccountCredentials(None, credentials_path)
+        ee.Initialize(credentials)
+        print("✅ Google Earth Engine Initialized Successfully!")
+    else:
+        raise Exception("❌ Earth Engine credentials file not found! Check GOOGLE_APPLICATION_CREDENTIALS.")
 except Exception as e:
-    ee.Authenticate()
-    ee.Initialize(project='tejaldaivajna8-test1')
+    print(f"❌ Failed to Initialize Earth Engine: {e}")
 
 def get_ndvi(lat, lon, date='2024-03-01'):
     point = ee.Geometry.Point(lon, lat)
@@ -185,9 +194,10 @@ def get_crop_features(lat, lon, api_key, date='2024-03-01'):
 # Load the NaiveBayes model
 model_path = "NaiveBayes.pkl"
 if not os.path.exists(model_path):
-    raise FileNotFoundError("❌ Error: 'NaiveBayes.pkl' model file not found!")
-
-NaiveBayes = joblib.load(model_path)
+    print("❌ Warning: Model file not found. Please upload `NaiveBayes.pkl` to the server.")
+    NaiveBayes = None  # Set to None to prevent errors
+else:
+    NaiveBayes = joblib.load(model_path)
 
 @app.route('/get-crop-recommendation', methods=['GET'])
 def get_crop_recommendation():
@@ -211,6 +221,9 @@ def get_crop_recommendation():
         received_array = np.array(received_values).reshape(1, -1)
         
         # Predict the crop
+        if NaiveBayes is None:
+            return jsonify({"error": "Model file not found. Cannot make predictions."}), 500
+        
         prediction = NaiveBayes.predict(received_array)[0]
         
         # Add prediction to the response
@@ -232,8 +245,9 @@ def get_crop_recommendation():
         return jsonify({"error": "Internal Server Error"}), 500
 
 if __name__ == "__main__":
-    import os
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    port = int(os.environ.get("PORT", 10000))  # Use 10000 for Render
+    print(f"✅ Starting server on port {port}...")
+    app.run(host="0.0.0.0", port=port)
 # if __name__ == "__main__":
 #     lat, lon = 12.6168187, 77.4426732
 #     api_key = "6d0e90511f9847a68f6987f9b61acfba"  # Get from https://opencagedata.com
