@@ -198,6 +198,9 @@ if not os.path.exists(model_path):
     NaiveBayes = None  # Set to None to prevent errors
 else:
     NaiveBayes = joblib.load(model_path)
+@app.route('/')
+def home():
+    return jsonify({"message": "API is live!"})
 
 @app.route('/get-crop-recommendation', methods=['GET'])
 def get_crop_recommendation():
@@ -244,10 +247,11 @@ def get_crop_recommendation():
         logging.error(f"Error processing request: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))  # Use 10000 for Render
-    print(f"✅ Starting server on port {port}...")
-    app.run(host="0.0.0.0", port=port)
+if __name__ == "__main__":  
+    port = int(os.getenv("PORT", "10000"))  # Default to 10000 for Render  
+    print(f"✅ Starting server on port {port}...")  
+    app.run(host="0.0.0.0", port=port, debug=False)  # Ensure debug=False for production  
+
 # if __name__ == "__main__":
 #     lat, lon = 12.6168187, 77.4426732
 #     api_key = "6d0e90511f9847a68f6987f9b61acfba"  # Get from https://opencagedata.com
