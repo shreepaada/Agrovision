@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: crop-prediction-api
+    env: python
+    runtime: python:3.9  # Specify Python 3.9
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn api_main:app"
+    envVars:
+      - key: OPENCAGE_API_KEY
+        sync: false
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        value: "/etc/secrets/gee-api.json"
