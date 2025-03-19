@@ -7,7 +7,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 import logging
-
+from flask_cors import CORS 
 # Load environment variables from .env file
 load_dotenv()
 
@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 
 # Initialize Flask app
 app = Flask(__name__)
-
+CORS(app, resources={r"/*": {"origins": "*"}}) 
 # Soil default values (unchanged)
 soil_default_values = {
     "Andhra Pradesh": {"pH": 7.62, "Nitrogen": 200},
