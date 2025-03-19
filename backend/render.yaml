@@ -2,10 +2,9 @@ services:
   - type: web
     name: crop-prediction-api
     env: python
-    runtime: python3.9  # ✅ Must be Python 3.9 for Google Earth Engine compatibility
     buildCommand: |
       pip install --upgrade pip
-      pip install earthengine-api
+      pip install --no-cache-dir --force-reinstall google-earthengine
       pip install -r requirements.txt
     startCommand: "gunicorn api_main:app"
     envVars:
