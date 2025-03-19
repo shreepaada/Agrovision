@@ -1,12 +1,8 @@
 services:
   - type: web
     name: crop-prediction-api
-    env: python
-    buildCommand: |
-      pip install --upgrade pip
-      pip install --no-cache-dir --force-reinstall google-earthengine
-      pip install -r requirements.txt
-    startCommand: "gunicorn api_main:app"
+    env: docker  # 🚨 Change from "python" to "docker"
+    dockerfilePath: ./Dockerfile  # Specify the Dockerfile path
     envVars:
       - key: OPENCAGE_API_KEY
         sync: false
