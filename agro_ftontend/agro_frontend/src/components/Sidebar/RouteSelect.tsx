@@ -1,42 +1,35 @@
-import React from "react";
-import { IconType } from "react-icons";
-import {
-  FiDollarSign,
-  FiHome,
-  FiLink,
-  FiPaperclip,
-  FiUsers,
-} from "react-icons/fi";
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { FiHome, FiUsers } from "react-icons/fi";
 
 export const RouteSelect = () => {
+  const pathname = usePathname();
+
   return (
     <div className="space-y-1">
-      <Route Icon={FiHome} selected={true} title="Dashboard" />
-      <Route Icon={FiUsers} selected={false} title="Insights" />
-      
+      <NavLink href="/dashboard" title="Home" icon={FiHome} active={pathname === "/dashboard"} />
+      <NavLink href="/insights" title="Insights" icon={FiUsers} active={pathname === "/insights"} />
     </div>
   );
 };
 
-const Route = ({
-  selected,
-  Icon,
+const NavLink = ({
+  href,
   title,
+  icon: Icon,
+  active,
 }: {
-  selected: boolean;
-  Icon: IconType;
+  href: string;
   title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  active: boolean;
 }) => {
   return (
-    <button
-      className={`flex items-center justify-start gap-2 w-full rounded px-2 py-1.5 text-sm transition-[box-shadow,_background-color,_color] ${
-        selected
-          ? "bg-white text-stone-950 shadow"
-          : "hover:bg-stone-200 bg-transparent text-stone-500 shadow-none"
-      }`}
-    >
-      <Icon className={selected ? "text-violet-500" : ""} />
+    <Link href={href} className={`flex items-center gap-2 w-full rounded px-2 py-1.5 text-sm transition-all ${active ? "bg-white text-black shadow" : "hover:bg-gray-200 text-gray-600"}`}>
+      <Icon className={active ? "text-green-500" : ""} />
       <span>{title}</span>
-    </button>
+    </Link>
   );
 };
