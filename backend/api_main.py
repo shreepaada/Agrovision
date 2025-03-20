@@ -19,42 +19,42 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}) 
 # Soil default values (unchanged)
 soil_default_values = {
-    "Andhra Pradesh": {"pH": 7.62, "Nitrogen": 200},
-    "Arunachal Pradesh": {"pH": 4.53, "Nitrogen": 298},
-    "Assam": {"pH": 4.81, "Nitrogen": 280},
-    "Bihar": {"pH": 8.25, "Nitrogen": 214},
-    "Chhattisgarh": {"pH": 6.30, "Nitrogen": 215},
-    "Goa": {"pH": 6.00, "Nitrogen": 105},
-    "Gujarat": {"pH": 7.67, "Nitrogen": 225},
-    "Haryana": {"pH": 7.75, "Nitrogen": 125},
-    "Himachal Pradesh": {"pH": 6.23, "Nitrogen": 230},
-    "Jharkhand": {"pH": 5.90, "Nitrogen": 490},
-    "Karnataka": {"pH": 5.49, "Nitrogen": 518},
-    "Kerala": {"pH": 7.00, "Nitrogen": 230},
-    "Maharashtra": {"pH": 5.96, "Nitrogen": 154},
-    "Madhya Pradesh": {"pH": 7.45, "Nitrogen": 195},
-    "Manipur": {"pH": 5.31, "Nitrogen": 267},
-    "Meghalaya": {"pH": 5.16, "Nitrogen": 256},
-    "Mizoram": {"pH": 5.10, "Nitrogen": 670},
-    "Nagaland": {"pH": 5.17, "Nitrogen": 410},
-    "Odisha": {"pH": 6.01, "Nitrogen": 230},
-    "Punjab": {"pH": 8.25, "Nitrogen": 145},
-    "Rajasthan": {"pH": 7.75, "Nitrogen": 230},
-    "Sikkim": {"pH": 4.87, "Nitrogen": 300},
-    "Tamil Nadu": {"pH": 7.12, "Nitrogen": 160},
-    "Tripura": {"pH": 5.05, "Nitrogen": 400},
-    "Telangana": {"pH": 6.12, "Nitrogen": 250},
-    "Uttar Pradesh": {"pH": 8.14, "Nitrogen": 244},
-    "Uttarakhand": {"pH": 5.70, "Nitrogen": 350},
-    "West Bengal": {"pH": 5.55, "Nitrogen": 220},
-    "Andaman and Nicobar Islands": {"pH": 4.05, "Nitrogen": 100},
-    "Chandigarh": {"pH": 7.75, "Nitrogen": 170},
-    "Dadra and Nagar Haveli and Daman and Diu": {"pH": 7.05, "Nitrogen": 400},
-    "Delhi": {"pH": 7.58, "Nitrogen": 100},
-    "Jammu & Kashmir": {"pH": 8.00, "Nitrogen": 190},
-    "Ladakh": {"pH": 8.45, "Nitrogen": 350},
-    "Lakshadweep": {"pH": 8.20, "Nitrogen": 180},
-    "Puducherry": {"pH": 7.30, "Nitrogen": 190}
+    "Andhra Pradesh": {"pH": 7.62, "Nitrogen": 20.0},
+    "Arunachal Pradesh": {"pH": 4.53, "Nitrogen": 29.8},
+    "Assam": {"pH": 4.81, "Nitrogen": 28.0},
+    "Bihar": {"pH": 8.25, "Nitrogen": 21.4},
+    "Chhattisgarh": {"pH": 6.30, "Nitrogen": 21.5},
+    "Goa": {"pH": 6.00, "Nitrogen": 10.5},
+    "Gujarat": {"pH": 7.67, "Nitrogen": 22.5},
+    "Haryana": {"pH": 7.75, "Nitrogen": 12.5},
+    "Himachal Pradesh": {"pH": 6.23, "Nitrogen": 23.0},
+    "Jharkhand": {"pH": 5.90, "Nitrogen": 49.0},
+    "Karnataka": {"pH": 5.49, "Nitrogen": 51.8},
+    "Kerala": {"pH": 7.00, "Nitrogen": 23.0},
+    "Maharashtra": {"pH": 5.96, "Nitrogen": 15.4},
+    "Madhya Pradesh": {"pH": 7.45, "Nitrogen": 19.5},
+    "Manipur": {"pH": 5.31, "Nitrogen": 26.7},
+    "Meghalaya": {"pH": 5.16, "Nitrogen": 25.6},
+    "Mizoram": {"pH": 5.10, "Nitrogen": 67.0},
+    "Nagaland": {"pH": 5.17, "Nitrogen": 41.0},
+    "Odisha": {"pH": 6.01, "Nitrogen": 23.0},
+    "Punjab": {"pH": 8.25, "Nitrogen": 14.5},
+    "Rajasthan": {"pH": 7.75, "Nitrogen": 23.0},
+    "Sikkim": {"pH": 4.87, "Nitrogen": 30.0},
+    "Tamil Nadu": {"pH": 7.12, "Nitrogen": 16.0},
+    "Tripura": {"pH": 5.05, "Nitrogen": 40.0},
+    "Telangana": {"pH": 6.12, "Nitrogen": 25.0},
+    "Uttar Pradesh": {"pH": 8.14, "Nitrogen": 24.4},
+    "Uttarakhand": {"pH": 5.70, "Nitrogen": 35.0},
+    "West Bengal": {"pH": 5.55, "Nitrogen": 22.0},
+    "Andaman and Nicobar Islands": {"pH": 4.05, "Nitrogen": 10.0},
+    "Chandigarh": {"pH": 7.75, "Nitrogen": 17.0},
+    "Dadra and Nagar Haveli and Daman and Diu": {"pH": 7.05, "Nitrogen": 40.0},
+    "Delhi": {"pH": 7.58, "Nitrogen": 10.0},
+    "Jammu & Kashmir": {"pH": 8.00, "Nitrogen": 19.0},
+    "Ladakh": {"pH": 8.45, "Nitrogen": 35.0},
+    "Lakshadweep": {"pH": 8.20, "Nitrogen": 18.0},
+    "Puducherry": {"pH": 7.30, "Nitrogen": 19.0}
 }
 
 # Authenticate and initialize GEE using Service Account
@@ -134,7 +134,7 @@ def get_soil_nitrogen(lat, lon):
             layer = data['properties']['layers'][0]
             depth = layer['depths'][0]
             if 'values' in depth and 'mean' in depth['values'] and depth['values']['mean'] is not None:
-                return depth['values']['mean']
+                return depth['values']['mean'] / 10
     except Exception as e:
         logging.error(f"Error fetching soil nitrogen: {e}")
     return None
