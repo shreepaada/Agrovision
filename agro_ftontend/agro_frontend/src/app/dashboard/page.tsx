@@ -2,7 +2,10 @@
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
+import { useRouter } from "next/navigation"; 
+
 const Dashboard = () => {
+  const router = useRouter();
   return (
     <section className="w-full px-8 py-12 grid grid-cols-1 md:grid-cols-2 items-center gap-8 max-w-6xl mx-auto">
       <div>
@@ -15,7 +18,10 @@ const Dashboard = () => {
         <p className="text-base md:text-lg text-slate-700 my-4 md:my-6">
           Leverage satellite imagery and machine learning to optimize crop selection, soil health, and yield prediction.
         </p>
-        <button className="bg-green-500 text-white font-medium py-2 px-4 rounded transition-all hover:bg-green-600 active:scale-95">
+        <button
+          onClick={() => router.push("/insights")} // Navigate to Insights page
+          className="bg-green-500 text-white font-medium py-2 px-4 rounded transition-all hover:bg-green-600 active:scale-95"
+        >
           Explore Insights
         </button>
       </div>

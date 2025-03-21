@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FiHome, FiUsers } from "react-icons/fi";
+import { FiHome, FiUsers, FiInfo } from "react-icons/fi";
 
 export const RouteSelect = () => {
   const pathname = usePathname();
@@ -11,6 +11,7 @@ export const RouteSelect = () => {
     <div className="space-y-1">
       <NavLink href="/dashboard" title="Home" icon={FiHome} active={pathname === "/dashboard"} />
       <NavLink href="/insights" title="Insights" icon={FiUsers} active={pathname === "/insights"} />
+      <NavLink href="/about" title="About" icon={FiInfo} active={pathname === "/about"} />
     </div>
   );
 };
