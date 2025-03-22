@@ -158,20 +158,38 @@ def get_soil_features_with_fallback(lat, lon, api_key):
     logging.warning("State not found in default values. Returning None.")
     return {"pH": None, "Nitrogen": None}
 
-def get_weather(lat, lon, start_date='2024-03-01', end_date='2024-03-01'):
-    url = f"https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,RH2M,PRECTOTCORR&community=AG&longitude={lon}&latitude={lat}&start={start_date.replace('-', '')}&end={end_date.replace('-', '')}&format=JSON"
+# def get_weather(lat, lon, start_date='2024-03-01', end_date='2024-03-01'):
+#     url = f"https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,RH2M,PRECTOTCORR&community=AG&longitude={lon}&latitude={lat}&start={start_date.replace('-', '')}&end={end_date.replace('-', '')}&format=JSON"
+#     try:
+#         response = requests.get(url)
+#         response.raise_for_status()
+#         data = response.json()
+#         if 'properties' in data:
+#             temperature = data['properties']['parameter']['T2M'][start_date.replace('-', '')]
+#             humidity = data['properties']['parameter']['RH2M'][start_date.replace('-', '')]
+#             rainfall = data['properties']['parameter']['PRECTOTCORR'][start_date.replace('-', '')]
+#             return {
+#                 "temperature": temperature,
+#                 "humidity": humidity,
+#                 "rainfall": rainfall
+#             }
+#     except Exception as e:
+#         logging.error(f"Error fetching weather data: {e}")
+#     return None
+
+def get_weather(lat, lon):
+    url = f"https://power.larc.nasa.gov/api/temporal/climatology/point?parameters=T2M,RH2M,PRECTOTCORR&community=AG&longitude={lon}&latitude={lat}&format=JSON"
+
     try:
         response = requests.get(url)
         response.raise_for_status()
         data = response.json()
+    
         if 'properties' in data:
-            temperature = data['properties']['parameter']['T2M'][start_date.replace('-', '')]
-            humidity = data['properties']['parameter']['RH2M'][start_date.replace('-', '')]
-            rainfall = data['properties']['parameter']['PRECTOTCORR'][start_date.replace('-', '')]
             return {
-                "temperature": temperature,
-                "humidity": humidity,
-                "rainfall": rainfall
+                "temperature": data['properties']['parameter']['T2M']['ANN'],  # °C (Annual average)
+                "humidity": data['properties']['parameter']['RH2M']['ANN'],  # % (Annual average)
+                "rainfall": (data['properties']['parameter']['PRECTOTCORR']['ANN'] * 30)  # mm/day (Annual average)
             }
     except Exception as e:
         logging.error(f"Error fetching weather data: {e}")
@@ -179,7 +197,7 @@ def get_weather(lat, lon, start_date='2024-03-01', end_date='2024-03-01'):
 
 def get_crop_features(lat, lon, api_key, date='2024-03-01'):
     ndvi = get_ndvi(lat, lon, date)
-    weather = get_weather(lat, lon, date)
+    weather = get_weather(lat, lon)
     soil_features = get_soil_features_with_fallback(lat, lon, api_key)
 
     return {
