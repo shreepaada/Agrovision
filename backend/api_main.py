@@ -191,13 +191,13 @@ def get_crop_features(lat, lon, api_key, date='2024-03-01'):
         "Rainfall (mm)": weather['rainfall'] if weather else None
     }
 
-# Load the NaiveBayes model
-model_path = "NaiveBayes.pkl"
+# Load the LightGBM model
+model_path = "LightGBM.pkl"
 if not os.path.exists(model_path):
-    print("❌ Warning: Model file not found. Please upload `NaiveBayes.pkl` to the server.")
-    NaiveBayes = None  # Set to None to prevent errors
+    print("❌ Warning: Model file not found. Please upload `LightGBM.pkl` to the server.")
+    LightGBM = None  # Set to None to prevent errors
 else:
-    NaiveBayes = joblib.load(model_path)
+    LightGBM = joblib.load(model_path)
 @app.route('/')
 def home():
     return jsonify({"message": "API is live!"})
@@ -224,10 +224,10 @@ def get_crop_recommendation():
         received_array = np.array(received_values).reshape(1, -1)
         
         # Predict the crop
-        if NaiveBayes is None:
+        if LightGBM is None:
             return jsonify({"error": "Model file not found. Cannot make predictions."}), 500
         
-        prediction = NaiveBayes.predict(received_array)[0]
+        prediction = LightGBM.predict(received_array)[0]
         
         # Add prediction to the response
         features["Recommended Crop"] = prediction
