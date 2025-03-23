@@ -75,14 +75,28 @@ const Insights = () => {
           <p className="text-gray-600 text-sm mt-2">
             The coordinates you entered indicate a barren land. Just because this land currently has little to no vegetation, doesn’t mean all hope is lost! More often than not, we simply haven’t unlocked the land’s full potential. Here are some methods to improve its quality:
           </p>
-          <ul className="text-sm text-gray-600 list-disc ml-6 mt-2 space-y-1">
-            <li>Assessing the Root Cause: Barren land can result from factors such as soil degradation, inadequate water availability, or nutrient deficiency. Conducting comprehensive soil tests, analyzing rainfall patterns, and identifying the root causes of barrenness will help in designing a targeted approach for restoration.</li>
-            <li>Soil Restoration and Fertility Improvement: To enhance barren land, soil restoration techniques play a pivotal role. This involves various activities such as mulching, composting, and adding organic matter to improve soil structure and fertility. Composting green waste, livestock manure, or food scraps provides rich nutrients that encourage vegetation growth. Additionally, implementing cover cropping and crop rotation helps prevent erosion, reduces weed growth, and enriches the soil.</li>
-            <li>Water Management and Conservation: Implementing water management techniques such as rainwater harvesting, contour farming, or constructing irrigation channels can enhance water availability for vegetation growth. Utilizing efficient irrigation methods, like drip irrigation or precision sprinklers, minimizes water wastage and improves plant survival rates.</li>
-            <li>Native Plant Species Introduction: Native plants are adapted to local climatic conditions and possess the ecological resilience necessary for thriving in a specific ecosystem. These plants help improve soil quality, prevent erosion, attract pollinators, and restore the balance of the local ecosystem by providing food and shelter for various wildlife species.</li>
-            <li>Conservation and Land Management: Preserving and conserving the regenerated vegetation and biodiversity is essential for the long-term success of barren land restoration. This can be achieved through sustainable land management practices, such as controlled grazing, responsible land use planning, and the establishment of protected areas. Involving local communities, educating them about the importance of biodiversity, and engaging them in conservation efforts fosters a sense of ownership and ensures the longevity of restoration initiatives.</li>
-            <li>Technological Innovations: Implementing advanced techniques like hydroseeding, where a mixture of seeds, fertilizers, and mulch is sprayed onto the land, accelerates vegetation growth. Similarly, using drone technology to identify areas most in need of restoration and monitoring their progress enables efficient use of resources and maximizes the effectiveness of restoration efforts.</li>
-          </ul>
+          <ul className="text-sm text-gray-700 list-disc ml-6 mt-2 space-y-4 leading-relaxed">
+  <li>
+    <span className="text-black font-semibold">Assessing the Root Cause:</span> Barren land can result from factors such as soil degradation, inadequate water availability, or nutrient deficiency. Conducting comprehensive soil tests, analyzing rainfall patterns, and identifying the root causes of barrenness will help in designing a targeted approach for restoration.
+  </li>
+  <li>
+    <span className="text-black font-semibold">Soil Restoration and Fertility Improvement:</span> To enhance barren land, soil restoration techniques play a pivotal role. This involves various activities such as mulching, composting, and adding organic matter to improve soil structure and fertility. Composting green waste, livestock manure, or food scraps provides rich nutrients that encourage vegetation growth. Additionally, implementing cover cropping and crop rotation helps prevent erosion, reduces weed growth, and enriches the soil.
+  </li>
+  <li>
+    <span className="text-black font-semibold">Water Management and Conservation:</span> Implementing water management techniques such as rainwater harvesting, contour farming, or constructing irrigation channels can enhance water availability for vegetation growth. Utilizing efficient irrigation methods, like drip irrigation or precision sprinklers, minimizes water wastage and improves plant survival rates.
+  </li>
+  <li>
+    <span className="text-black font-semibold">Native Plant Species Introduction:</span> Native plants are adapted to local climatic conditions and possess the ecological resilience necessary for thriving in a specific ecosystem. These plants help improve soil quality, prevent erosion, attract pollinators, and restore the balance of the local ecosystem by providing food and shelter for various wildlife species.
+  </li>
+  <li>
+    <span className="text-black font-semibold">Conservation and Land Management:</span> Preserving and conserving the regenerated vegetation and biodiversity is essential for the long-term success of barren land restoration. This can be achieved through sustainable land management practices, such as controlled grazing, responsible land use planning, and the establishment of protected areas. Involving local communities, educating them about the importance of biodiversity, and engaging them in conservation efforts fosters a sense of ownership and ensures the longevity of restoration initiatives.
+  </li>
+  <li>
+    <span className="text-black font-semibold">Technological Innovations:</span> Implementing advanced techniques like hydroseeding, where a mixture of seeds, fertilizers, and mulch is sprayed onto the land, accelerates vegetation growth. Similarly, using drone technology to identify areas most in need of restoration and monitoring their progress enables efficient use of resources and maximizes the effectiveness of restoration efforts.
+  </li>
+</ul>
+
+
           <p className="text-gray-600 text-sm mt-2 font-semibold">
             Continue reading below to find a crop most suited for your land!
           </p>
@@ -166,7 +180,10 @@ const Insights = () => {
           {ndviValue > 0 && cropInfo && (
             <div className="mt-6 bg-gray-100 p-6 rounded-lg">
               <h3 className="text-xl font-semibold text-green-600">🌱 Recommended Crop</h3>
-              <p><strong> {cropInfo.name}</strong></p>
+              <h2 className="text-2xl font-bold text-center text-green-700 mt-4 mb-2">
+  {cropInfo.name}
+</h2>
+
 
               <div className="mt-4 flex flex-wrap gap-4 justify-center">
                 {cropInfo.images.map((img, i) => (
@@ -188,7 +205,7 @@ const Insights = () => {
                 </ul>
               </div>
 
-              <div className="mt-4 text-sm text-gray-700">
+              <div className="mt-4 text-sm text-gray-700 leading-relaxed space-y-2">
                 <p><strong>Soil:</strong> {cropInfo.insights.soil}</p>
                 <p><strong>pH Range:</strong> {cropInfo.insights.pH}</p>
                 <p><strong>Irrigation:</strong> {cropInfo.insights.irrigation}</p>
