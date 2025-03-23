@@ -6,12 +6,10 @@ export const Plan = () => {
       <div className="flex items-center justify-between">
         <div>
           <p className="font-bold">Thank You For Visiting</p>
-          <p className="text-stone-500">Enjoy The Free Services</p>
+          <p className="text-stone-500">Enjoy The Free Insights</p>
         </div>
 
-        <button className="px-2 py-1.5 font-medium bg-stone-200 hover:bg-stone-300 transition-colors rounded">
-          Support
-        </button>
+        
       </div>
     </div>
   );

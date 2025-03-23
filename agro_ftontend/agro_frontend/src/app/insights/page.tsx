@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import allCrops, { CropInfo } from "./cropdata";
 
 const Insights = () => {
   const [data, setData] = useState<any>(null);
@@ -8,7 +9,7 @@ const Insights = () => {
   const [lat, setLat] = useState("");
   const [lon, setLon] = useState("");
   const [error, setError] = useState("");
-  const [cropInfo, setCropInfo] = useState<any>(null);
+  const [cropInfo, setCropInfo] = useState<CropInfo | null>(null);
 
   const fetchInsights = async () => {
     if (!lat || !lon) {
@@ -32,10 +33,20 @@ const Insights = () => {
       }
 
       const result = await response.json();
+      console.log("API Result:", result);
       setData(result);
 
       if (result["Recommended Crop"]) {
-        fetchCropDetails(result["Recommended Crop"]);
+        const recommendedCrop = result["Recommended Crop"];
+        const cropKey = Object.keys(allCrops).find(
+          (key) => key.toLowerCase() === recommendedCrop.toLowerCase()
+        );
+
+        if (cropKey) {
+          setCropInfo(allCrops[cropKey]);
+        } else {
+          console.warn(`No crop data found for: "${recommendedCrop}"`);
+        }
       }
     } catch (err: any) {
       setError(err.message);
@@ -44,33 +55,68 @@ const Insights = () => {
     }
   };
 
-  const fetchCropDetails = async (cropName: string) => {
-    try {
-      const cropApiUrl = `https://api.pexels.com/v1/search?query=${cropName}&per_page=1`;
-      const response = await fetch(cropApiUrl, {
-        headers: { Authorization: process.env.NEXT_PUBLIC_PEXELS_API_KEY as string },
-      });
+  const renderNDVIMessage = (ndvi: number | null) => {
+    if (ndvi === null || isNaN(ndvi)) return null;
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch crop image.");
-      }
-
-      const data = await response.json();
-      const imageUrl = data?.photos?.[0]?.src?.medium || "";
-
-      setCropInfo({ name: cropName, image: imageUrl });
-    } catch (err: any) {
-      console.error("Error fetching crop details:", err);
+    if (ndvi <= 0) {
+      return (
+        <>
+          <p className="text-gray-600 text-sm mt-2">
+            The coordinates you entered indicate water or non-vegetated land features.
+          </p>
+          <p className="text-gray-600 text-sm mt-2 font-semibold">
+            (Show soil and weather data but don’t show crop recommendation for this area even if available)
+          </p>
+        </>
+      );
+    } else if (ndvi > 0 && ndvi <= 0.3) {
+      return (
+        <>
+          <p className="text-gray-600 text-sm mt-2">
+            The coordinates you entered indicate a barren land. Just because this land currently has little to no vegetation, doesn’t mean all hope is lost! More often than not, we simply haven’t unlocked the land’s full potential. Here are some methods to improve its quality:
+          </p>
+          <ul className="text-sm text-gray-600 list-disc ml-6 mt-2 space-y-1">
+            <li>Assessing the Root Cause: Barren land can result from factors such as soil degradation, inadequate water availability, or nutrient deficiency. Conducting comprehensive soil tests, analyzing rainfall patterns, and identifying the root causes of barrenness will help in designing a targeted approach for restoration.</li>
+            <li>Soil Restoration and Fertility Improvement: To enhance barren land, soil restoration techniques play a pivotal role. This involves various activities such as mulching, composting, and adding organic matter to improve soil structure and fertility. Composting green waste, livestock manure, or food scraps provides rich nutrients that encourage vegetation growth. Additionally, implementing cover cropping and crop rotation helps prevent erosion, reduces weed growth, and enriches the soil.</li>
+            <li>Water Management and Conservation: Implementing water management techniques such as rainwater harvesting, contour farming, or constructing irrigation channels can enhance water availability for vegetation growth. Utilizing efficient irrigation methods, like drip irrigation or precision sprinklers, minimizes water wastage and improves plant survival rates.</li>
+            <li>Native Plant Species Introduction: Native plants are adapted to local climatic conditions and possess the ecological resilience necessary for thriving in a specific ecosystem. These plants help improve soil quality, prevent erosion, attract pollinators, and restore the balance of the local ecosystem by providing food and shelter for various wildlife species.</li>
+            <li>Conservation and Land Management: Preserving and conserving the regenerated vegetation and biodiversity is essential for the long-term success of barren land restoration. This can be achieved through sustainable land management practices, such as controlled grazing, responsible land use planning, and the establishment of protected areas. Involving local communities, educating them about the importance of biodiversity, and engaging them in conservation efforts fosters a sense of ownership and ensures the longevity of restoration initiatives.</li>
+            <li>Technological Innovations: Implementing advanced techniques like hydroseeding, where a mixture of seeds, fertilizers, and mulch is sprayed onto the land, accelerates vegetation growth. Similarly, using drone technology to identify areas most in need of restoration and monitoring their progress enables efficient use of resources and maximizes the effectiveness of restoration efforts.</li>
+          </ul>
+          <p className="text-gray-600 text-sm mt-2 font-semibold">
+            Continue reading below to find a crop most suited for your land!
+          </p>
+        </>
+      );
+    } else if (ndvi > 0.3 && ndvi <= 0.6) {
+      return (
+        <p className="text-gray-600 text-sm mt-2">
+          The coordinates you entered point to a land with some existing vegetation cover! With the right care and improvements, this land has the potential to become even more productive. If you're interested in optimizing its use, check out the crop recommendation below!
+        </p>
+      );
+    } else if (ndvi > 0.6 && ndvi <= 0.9) {
+      return (
+        <p className="text-gray-600 text-sm mt-2">
+          The coordinates you entered point to a land with a dense and heavy vegetation cover! It seems like you’re making great use of your land already, and the plants you're growing are thriving! But if you are looking to expand your plant collection, check out the crop recommendation below.
+        </p>
+      );
+    } else if (ndvi > 0.9) {
+      return (
+        <p className="text-gray-600 text-sm mt-2">
+          The coordinates you entered point to a land with very dense vegetation cover - perhaps a rainforest? You may not need to grow more plants here, but if you're curious about the best-suited crop for this land, check out the recommendation below.
+        </p>
+      );
     }
+
+    return null;
   };
+
+  const ndviValue = data?.NDVI ?? null;
 
   return (
     <section className="w-full px-8 py-12 max-w-6xl mx-auto">
-      <h2 className="text-3xl md:text-5xl font-semibold mb-6">
-        Agricultural Insights 🌾
-      </h2>
+      <h2 className="text-3xl md:text-5xl font-semibold mb-6">Agricultural Insights 🌾</h2>
 
-      {/* Input Fields */}
       <div className="flex flex-col md:flex-row items-center gap-4">
         <input
           type="number"
@@ -99,71 +145,57 @@ const Insights = () => {
 
       {data && (
         <div className="mt-6 bg-white shadow-lg rounded-lg p-6">
-          {/* NDVI Section */}
           <div className="mb-6">
-            <h3 className="text-xl font-semibold text-blue-600">🌍 NDVI Analysis</h3>
-            <p><strong>NDVI Value:</strong> {data.NDVI ?? "N/A"}</p>
-            <p className="text-gray-600 text-sm mt-2">
-              The NDVI (Normalized Difference Vegetation Index) measures vegetation health.  
-              - Higher values (0.6 - 1.0) indicate lush green crops.  
-              - Moderate values (0.2 - 0.6) suggest growing crops.  
-              - Low values (0 - 0.2) may indicate dry or barren land.  
-              This helps determine if crops are healthy or stressed.
-            </p>
+            <h3 className="text-xl font-semibold text-green-600">🌍 NDVI Analysis</h3>
+            <p><strong>NDVI Value:</strong> {ndviValue ?? "N/A"}</p>
+            {renderNDVIMessage(ndviValue)}
           </div>
 
-          {/* Soil & Weather Insights */}
           <div className="mb-6">
-            <h3 className="text-xl font-semibold text-green-600">🧪 Soil & Weather Insights</h3>
+            <h3 className="text-xl font-semibold text-green-600">Soil & Weather Insights</h3>
             <ul className="space-y-2">
-              <li><strong>🧪 Soil pH:</strong> {data["Soil pH"] ?? "N/A"}  
-                <span className="text-gray-600 text-sm block">
-                  A pH of 6-7 is ideal for most crops. Lower pH (less than 6) means acidic soil,  
-                  suitable for crops like coffee & tea. Higher pH (greater than 7) means alkaline soil,  
-                  good for barley & mustard.
-                </span>
-              </li>
-              <li><strong>🌾 Soil Nitrogen:</strong> {data["Soil Nitrogen"] ?? "N/A"}  
-                <span className="text-gray-600 text-sm block">
-                  Higher nitrogen levels boost leafy growth. Too much can delay fruit production.  
-                  Low nitrogen may require fertilizers like urea or compost.
-                </span>
-              </li>
-              <li><strong>🌡️ Temperature (°C):</strong> {data["Temperature (°C)"] ?? "N/A"}  
-                <span className="text-gray-600 text-sm block">
-                  The optimal temperature for crops varies:  
-                  - Wheat grows best at 10-25°C  
-                  - Rice prefers 20-35°C  
-                  - Coffee thrives at 18-22°C
-                </span>
-              </li>
-              <li><strong>💧 Humidity (%):</strong> {data["Humidity (%)"] ?? "N/A"}  
-                <span className="text-gray-600 text-sm block">
-                  Low humidity (less than 40%) can stress plants, while high humidity (greater than 80%)  
-                  can promote fungal diseases.  
-                </span>
-              </li>
-              <li><strong>🌧️ Rainfall (mm):</strong> {data["Rainfall (mm)"] ?? "N/A"}  
-                <span className="text-gray-600 text-sm block">
-                  Different crops require different rainfall levels. Rice needs 1200-2000mm,  
-                  while wheat requires only 300-700mm.
-                </span>
-              </li>
+              <li><strong>🧪 Soil pH:</strong> {data["Soil pH"] ?? "N/A"}</li>
+              <li><strong>🌾 Soil Nitrogen:</strong> {data["Soil Nitrogen"] ?? "N/A"}</li>
+              <li><strong>🌡️ Temperature (°C):</strong> {data["Temperature (°C)"] ?? "N/A"}</li>
+              <li><strong>💧 Humidity (%):</strong> {data["Humidity (%)"] ?? "N/A"}</li>
+              <li><strong>🌧️ Rainfall (mm):</strong> {data["Rainfall (mm)"] ?? "N/A"}</li>
             </ul>
           </div>
 
-          {/* Crop Recommendation */}
-          {cropInfo && (
+          {/* Only show crop recommendation if NDVI > 0 */}
+          {ndviValue > 0 && cropInfo && (
             <div className="mt-6 bg-gray-100 p-6 rounded-lg">
-              <h3 className="text-xl font-semibold text-red-600">🌱 Recommended Crop</h3>
-              <p><strong>Crop:</strong> {cropInfo.name}</p>
-              {cropInfo.image && (
-                <img src={cropInfo.image} alt={cropInfo.name} className="mt-4 w-full max-w-md rounded-lg shadow-md" />
-              )}
-              <p className="text-gray-600 text-sm mt-2">
-                This crop is best suited for the given soil pH, nitrogen, temperature, humidity,  
-                and rainfall conditions.
-              </p>
+              <h3 className="text-xl font-semibold text-green-600">🌱 Recommended Crop</h3>
+              <p><strong> {cropInfo.name}</strong></p>
+
+              <div className="mt-4 flex flex-wrap gap-4 justify-center">
+                {cropInfo.images.map((img, i) => (
+                  <img
+                    key={i}
+                    src={img}
+                    alt={`${cropInfo.name} image ${i + 1}`}
+                    className="w-48 h-48 object-cover rounded-lg shadow-md"
+                  />
+                ))}
+              </div>
+
+              <div className="mt-4">
+                <h4 className="text-md font-semibold mb-2 text-gray-800">Benefits:</h4>
+                <ul className="list-disc ml-6 text-gray-700 text-sm space-y-1">
+                  {cropInfo.benefits.map((b, i) => (
+                    <li key={i}>{b}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="mt-4 text-sm text-gray-700">
+                <p><strong>Soil:</strong> {cropInfo.insights.soil}</p>
+                <p><strong>pH Range:</strong> {cropInfo.insights.pH}</p>
+                <p><strong>Irrigation:</strong> {cropInfo.insights.irrigation}</p>
+                <p><strong>Temperature:</strong> {cropInfo.insights.temperature}</p>
+                <p><strong>Fertilization:</strong> {cropInfo.insights.fertilization}</p>
+                <p><strong>Technology:</strong> {cropInfo.insights.technology}</p>
+              </div>
             </div>
           )}
         </div>
