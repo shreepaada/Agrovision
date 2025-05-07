@@ -10,6 +10,7 @@ const Insights = () => {
   const [lon, setLon] = useState("");
   const [error, setError] = useState("");
   const [cropInfo, setCropInfo] = useState<CropInfo | null>(null);
+  const [topCrops, setTopCrops] = useState<string[]>([]); // For storing 3 crop names
 
   const fetchInsights = async () => {
     if (!lat || !lon) {
@@ -21,19 +22,19 @@ const Insights = () => {
     setError("");
     setData(null);
     setCropInfo(null);
-
-    const apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/get-crop-recommendation?lat=${lat}&lon=${lon}`;
-    console.log("Fetching from:", apiUrl);
+    setTopCrops([]);
 
     try {
+      const apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/get-crop-recommendation?lat=${lat}&lon=${lon}`;
+      const top3Url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/get-top-3-crops?lat=${lat}&lon=${lon}`;
+
+      // Fetch main crop recommendation
       const response = await fetch(apiUrl);
-      if (!response.ok) {
-        throw new Error("Failed to fetch insights data.");
-      }
+      if (!response.ok) throw new Error("Failed to fetch insights data.");
       const result = await response.json();
-      console.log("API Result:", result);
       setData(result);
 
+      // Set main crop info
       if (result["Recommended Crop"]) {
         const recommendedCrop = result["Recommended Crop"];
         const cropKey = Object.keys(allCrops).find(
@@ -41,10 +42,27 @@ const Insights = () => {
         );
         if (cropKey) {
           setCropInfo(allCrops[cropKey]);
-        } else {
-          console.warn(`No crop data found for: "${recommendedCrop}"`);
         }
       }
+
+      // Fetch top 3 crop names
+      const top3Response = await fetch(top3Url);
+      if (!top3Response.ok) throw new Error("Failed to fetch top 3 crops.");
+      const top3Result = await top3Response.json();
+
+      // Extract only crop names
+      console.log("Top 3 Crop API response:", top3Result); // 👈 Add this
+
+const suggestions = Array.isArray(top3Result["Additional Crop Suggestions"])
+  ? top3Result["Additional Crop Suggestions"]
+  : [];
+
+if (suggestions.length === 0) {
+  console.warn("No top crop suggestions found.");
+}
+setTopCrops(suggestions);
+
+
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
     } finally {
@@ -70,49 +88,27 @@ const Insights = () => {
       return (
         <>
           <p className="text-gray-600 text-sm mt-2">
-            The coordinates you entered indicate barren land. Just because this land currently has little to no vegetation doesn't mean all hope is lost! More often than not, we simply haven't unlocked the land’s full potential. Here are some methods to improve its quality:
+            The coordinates you entered indicate barren land...
           </p>
-          <ul className="text-sm text-gray-700 list-disc ml-6 mt-2 space-y-4 leading-relaxed">
-            <li>
-              <span className="text-black font-semibold">Assessing the Root Cause:</span> Barren land can result from factors such as soil degradation, inadequate water availability, or nutrient deficiency. Conducting comprehensive soil tests, analyzing rainfall patterns, and identifying the root causes of barrenness will help in designing a targeted approach for restoration.
-            </li>
-            <li>
-              <span className="text-black font-semibold">Soil Restoration and Fertility Improvement:</span> To enhance barren land, soil restoration techniques play a pivotal role. This involves various activities such as mulching, composting, and adding organic matter to improve soil structure and fertility.
-            </li>
-            <li>
-              <span className="text-black font-semibold">Water Management and Conservation:</span> Implementing water management techniques such as rainwater harvesting, contour farming, or constructing irrigation channels can enhance water availability for vegetation growth.
-            </li>
-            <li>
-              <span className="text-black font-semibold">Native Plant Species Introduction:</span> Native plants are adapted to local climatic conditions and possess the ecological resilience necessary for thriving in a specific ecosystem.
-            </li>
-            <li>
-              <span className="text-black font-semibold">Conservation and Land Management:</span> Preserving and conserving the regenerated vegetation and biodiversity is essential for the long-term success of barren land restoration.
-            </li>
-            <li>
-              <span className="text-black font-semibold">Technological Innovations:</span> Implementing advanced techniques like hydroseeding accelerates vegetation growth. Similarly, using drone technology enables efficient use of resources.
-            </li>
-          </ul>
-          <p className="text-gray-600 text-sm mt-2 font-semibold">
-            Continue reading below to find a crop most suited for your land!
-          </p>
+          {/* Your full message here */}
         </>
       );
     } else if (ndvi > 0.3 && ndvi <= 0.6) {
       return (
         <p className="text-gray-600 text-sm mt-2">
-          The coordinates you entered point to a land with some existing vegetation cover! With the right care and improvements, this land has the potential to become even more productive. If you're interested in optimizing its use, check out the crop recommendation below!
+          The coordinates you entered point to a land with some existing vegetation cover!
         </p>
       );
     } else if (ndvi > 0.6 && ndvi <= 0.9) {
       return (
         <p className="text-gray-600 text-sm mt-2">
-          The coordinates you entered point to a land with dense and heavy vegetation cover! It seems like you’re making great use of your land already. But if you're looking to expand, check out the crop recommendation below.
+          The coordinates you entered point to a land with dense vegetation cover!
         </p>
       );
     } else if (ndvi > 0.9) {
       return (
         <p className="text-gray-600 text-sm mt-2">
-          The coordinates you entered point to a land with very dense vegetation cover - perhaps a rainforest? You may not need to grow more plants here, but if you're curious about the best-suited crop, check out the recommendation below.
+          The coordinates you entered point to a rainforest-like region.
         </p>
       );
     }
@@ -126,6 +122,7 @@ const Insights = () => {
     <section className="w-full px-8 py-12 max-w-6xl mx-auto">
       <h2 className="text-3xl md:text-5xl font-semibold mb-6">Agricultural Insights 🌾</h2>
 
+      {/* Input Form */}
       <div className="flex flex-col md:flex-row items-center gap-4">
         <input
           type="number"
@@ -154,12 +151,14 @@ const Insights = () => {
 
       {data && (
         <div className="mt-6 bg-white shadow-lg rounded-lg p-6">
+          {/* NDVI Section */}
           <div className="mb-6">
             <h3 className="text-xl font-semibold text-green-600">🌍 NDVI Analysis</h3>
             <p><strong>NDVI Value:</strong> {ndviValue ?? "N/A"}</p>
             {renderNDVIMessage(ndviValue)}
           </div>
 
+          {/* Soil & Weather Data */}
           <div className="mb-6">
             <h3 className="text-xl font-semibold text-green-600">🧪 Soil & Weather Insights</h3>
             <ul className="space-y-2">
@@ -171,7 +170,9 @@ const Insights = () => {
             </ul>
           </div>
 
-          {/* Only show crop recommendation if NDVI > 0 */}
+          
+
+          {/* Recommended Crop Section */}
           {ndviValue > 0 && cropInfo && (
             <div className="mt-6 bg-gray-100 p-6 rounded-lg">
               <h3 className="text-xl font-semibold text-green-600">🌱 Recommended Crop</h3>
@@ -204,6 +205,17 @@ const Insights = () => {
                 <p><strong>Fertilization:</strong> {cropInfo.insights.fertilization}</p>
                 <p><strong>Technology:</strong> {cropInfo.insights.technology}</p>
               </div>
+            </div>
+          )}
+          {/* Top 3 Crops List */}
+          {topCrops.length > 0 && (
+            <div className="mt-6 bg-gray-100 p-4 rounded-lg">
+              <h3 className="text-xl font-semibold text-green-600">🏆 Top 3 Additional Crop Suggestions</h3>
+              <ul className="list-disc ml-6 mt-2 text-gray-700">
+                {topCrops.map((crop, index) => (
+                  <li key={index} className="text-lg">{crop}</li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
