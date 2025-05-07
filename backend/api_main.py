@@ -264,11 +264,60 @@ def get_crop_recommendation():
     except Exception as e:
         logging.error(f"Error processing request: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
+@app.route('/get-top-3-crops', methods=['GET'])
+def get_top_3_crops():
+    try:
+        lat = float(request.args.get('lat'))
+        lon = float(request.args.get('lon'))
+
+        logging.info(f"🔍 Predicting top 3 crops for lat={lat}, lon={lon}")
+        api_key = os.getenv("OPENCAGE_API_KEY")
+        features = get_crop_features(lat, lon, api_key)
+
+        if not features or any(v is None for v in features.values()):
+            return jsonify({"error": "Failed to fetch complete feature data"}), 500
+
+        received_values = [value for key, value in features.items() if key != "NDVI"]
+        received_array = np.array(received_values).reshape(1, -1)
+
+        if LightGBM is None:
+            return jsonify({"error": "Model file not loaded"}), 500
+
+        probs = LightGBM.predict_proba(received_array)[0]
+        classes = LightGBM.classes_
+
+        sorted_indices = np.argsort(probs)[::-1]
+        top_crop = classes[sorted_indices[0]]
+        additional_crops = [classes[i] for i in sorted_indices[1:4]]
+
+        result = {
+            "NDVI": features["NDVI"],
+            "Soil pH": features["Soil pH"],
+            "Soil Nitrogen": features["Soil Nitrogen"],
+            "Temperature (°C)": features["Temperature (°C)"],
+            "Humidity (%)": features["Humidity (%)"],
+            "Rainfall (mm)": features["Rainfall (mm)"],
+            "Top Recommended Crop": top_crop,
+            "Additional Crop Suggestions": additional_crops
+        }
+
+        logging.info(f"✅ Top 3 crop prediction result: {result}")
+        return jsonify(result)
+
+    except ValueError:
+        logging.error("❌ Invalid lat/lon provided.")
+        return jsonify({"error": "Invalid latitude or longitude"}), 400
+    except Exception as e:
+        logging.error(f"❌ Error in /get-top-3-crops: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
 
 if __name__ == "__main__":  
     port = int(os.getenv("PORT", "10000"))  # Default to 10000 for Render  
     print(f"✅ Starting server on port {port}...")  
     app.run(host="0.0.0.0", port=port, debug=False)  # Ensure debug=False for production  
+
+
+
 
 # if __name__ == "__main__":
 #     lat, lon = 12.6168187, 77.4426732
