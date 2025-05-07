@@ -27,11 +27,9 @@ const Insights = () => {
 
     try {
       const response = await fetch(apiUrl);
-
       if (!response.ok) {
         throw new Error("Failed to fetch insights data.");
       }
-
       const result = await response.json();
       console.log("API Result:", result);
       setData(result);
@@ -41,7 +39,6 @@ const Insights = () => {
         const cropKey = Object.keys(allCrops).find(
           (key) => key.toLowerCase() === recommendedCrop.toLowerCase()
         );
-
         if (cropKey) {
           setCropInfo(allCrops[cropKey]);
         } else {
@@ -49,7 +46,7 @@ const Insights = () => {
         }
       }
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "An unexpected error occurred.");
     } finally {
       setLoading(false);
     }
@@ -73,30 +70,28 @@ const Insights = () => {
       return (
         <>
           <p className="text-gray-600 text-sm mt-2">
-            The coordinates you entered indicate a barren land. Just because this land currently has little to no vegetation, doesn’t mean all hope is lost! More often than not, we simply haven’t unlocked the land’s full potential. Here are some methods to improve its quality:
+            The coordinates you entered indicate barren land. Just because this land currently has little to no vegetation doesn't mean all hope is lost! More often than not, we simply haven't unlocked the land’s full potential. Here are some methods to improve its quality:
           </p>
           <ul className="text-sm text-gray-700 list-disc ml-6 mt-2 space-y-4 leading-relaxed">
-  <li>
-    <span className="text-black font-semibold">Assessing the Root Cause:</span> Barren land can result from factors such as soil degradation, inadequate water availability, or nutrient deficiency. Conducting comprehensive soil tests, analyzing rainfall patterns, and identifying the root causes of barrenness will help in designing a targeted approach for restoration.
-  </li>
-  <li>
-    <span className="text-black font-semibold">Soil Restoration and Fertility Improvement:</span> To enhance barren land, soil restoration techniques play a pivotal role. This involves various activities such as mulching, composting, and adding organic matter to improve soil structure and fertility. Composting green waste, livestock manure, or food scraps provides rich nutrients that encourage vegetation growth. Additionally, implementing cover cropping and crop rotation helps prevent erosion, reduces weed growth, and enriches the soil.
-  </li>
-  <li>
-    <span className="text-black font-semibold">Water Management and Conservation:</span> Implementing water management techniques such as rainwater harvesting, contour farming, or constructing irrigation channels can enhance water availability for vegetation growth. Utilizing efficient irrigation methods, like drip irrigation or precision sprinklers, minimizes water wastage and improves plant survival rates.
-  </li>
-  <li>
-    <span className="text-black font-semibold">Native Plant Species Introduction:</span> Native plants are adapted to local climatic conditions and possess the ecological resilience necessary for thriving in a specific ecosystem. These plants help improve soil quality, prevent erosion, attract pollinators, and restore the balance of the local ecosystem by providing food and shelter for various wildlife species.
-  </li>
-  <li>
-    <span className="text-black font-semibold">Conservation and Land Management:</span> Preserving and conserving the regenerated vegetation and biodiversity is essential for the long-term success of barren land restoration. This can be achieved through sustainable land management practices, such as controlled grazing, responsible land use planning, and the establishment of protected areas. Involving local communities, educating them about the importance of biodiversity, and engaging them in conservation efforts fosters a sense of ownership and ensures the longevity of restoration initiatives.
-  </li>
-  <li>
-    <span className="text-black font-semibold">Technological Innovations:</span> Implementing advanced techniques like hydroseeding, where a mixture of seeds, fertilizers, and mulch is sprayed onto the land, accelerates vegetation growth. Similarly, using drone technology to identify areas most in need of restoration and monitoring their progress enables efficient use of resources and maximizes the effectiveness of restoration efforts.
-  </li>
-</ul>
-
-
+            <li>
+              <span className="text-black font-semibold">Assessing the Root Cause:</span> Barren land can result from factors such as soil degradation, inadequate water availability, or nutrient deficiency. Conducting comprehensive soil tests, analyzing rainfall patterns, and identifying the root causes of barrenness will help in designing a targeted approach for restoration.
+            </li>
+            <li>
+              <span className="text-black font-semibold">Soil Restoration and Fertility Improvement:</span> To enhance barren land, soil restoration techniques play a pivotal role. This involves various activities such as mulching, composting, and adding organic matter to improve soil structure and fertility.
+            </li>
+            <li>
+              <span className="text-black font-semibold">Water Management and Conservation:</span> Implementing water management techniques such as rainwater harvesting, contour farming, or constructing irrigation channels can enhance water availability for vegetation growth.
+            </li>
+            <li>
+              <span className="text-black font-semibold">Native Plant Species Introduction:</span> Native plants are adapted to local climatic conditions and possess the ecological resilience necessary for thriving in a specific ecosystem.
+            </li>
+            <li>
+              <span className="text-black font-semibold">Conservation and Land Management:</span> Preserving and conserving the regenerated vegetation and biodiversity is essential for the long-term success of barren land restoration.
+            </li>
+            <li>
+              <span className="text-black font-semibold">Technological Innovations:</span> Implementing advanced techniques like hydroseeding accelerates vegetation growth. Similarly, using drone technology enables efficient use of resources.
+            </li>
+          </ul>
           <p className="text-gray-600 text-sm mt-2 font-semibold">
             Continue reading below to find a crop most suited for your land!
           </p>
@@ -111,13 +106,13 @@ const Insights = () => {
     } else if (ndvi > 0.6 && ndvi <= 0.9) {
       return (
         <p className="text-gray-600 text-sm mt-2">
-          The coordinates you entered point to a land with a dense and heavy vegetation cover! It seems like you’re making great use of your land already, and the plants you're growing are thriving! But if you are looking to expand your plant collection, check out the crop recommendation below.
+          The coordinates you entered point to a land with dense and heavy vegetation cover! It seems like you’re making great use of your land already. But if you're looking to expand, check out the crop recommendation below.
         </p>
       );
     } else if (ndvi > 0.9) {
       return (
         <p className="text-gray-600 text-sm mt-2">
-          The coordinates you entered point to a land with very dense vegetation cover - perhaps a rainforest? You may not need to grow more plants here, but if you're curious about the best-suited crop for this land, check out the recommendation below.
+          The coordinates you entered point to a land with very dense vegetation cover - perhaps a rainforest? You may not need to grow more plants here, but if you're curious about the best-suited crop, check out the recommendation below.
         </p>
       );
     }
@@ -166,13 +161,13 @@ const Insights = () => {
           </div>
 
           <div className="mb-6">
-            <h3 className="text-xl font-semibold text-green-600">Soil & Weather Insights</h3>
+            <h3 className="text-xl font-semibold text-green-600">🧪 Soil & Weather Insights</h3>
             <ul className="space-y-2">
-              <li><strong>🧪 Soil pH:</strong> {data["Soil pH"] ?? "N/A"}</li>
-              <li><strong>🌾 Soil Nitrogen:</strong> {data["Soil Nitrogen"] ?? "N/A"}</li>
-              <li><strong>🌡️ Temperature (°C):</strong> {data["Temperature (°C)"] ?? "N/A"}</li>
-              <li><strong>💧 Humidity (%):</strong> {data["Humidity (%)"] ?? "N/A"}</li>
-              <li><strong>🌧️ Rainfall (mm):</strong> {data["Rainfall (mm)"] ?? "N/A"}</li>
+              <li><strong>Soil pH:</strong> {data["Soil pH"] ?? "N/A"}</li>
+              <li><strong>Soil Nitrogen:</strong> {data["Soil Nitrogen"] ?? "N/A"}</li>
+              <li><strong>Temperature (°C):</strong> {data["Temperature (°C)"] ?? "N/A"}</li>
+              <li><strong>Humidity (%):</strong> {data["Humidity (%)"] ?? "N/A"}</li>
+              <li><strong>Rainfall (mm):</strong> {data["Rainfall (mm)"] ?? "N/A"}</li>
             </ul>
           </div>
 
@@ -183,7 +178,6 @@ const Insights = () => {
               <h2 className="text-2xl font-bold text-center text-green-700 mt-4 mb-2">
                 {cropInfo.name}
               </h2>
-
               <div className="mt-4 flex flex-wrap gap-4 justify-center">
                 {cropInfo.images.map((img, i) => (
                   <img
@@ -194,7 +188,6 @@ const Insights = () => {
                   />
                 ))}
               </div>
-
               <div className="mt-4">
                 <h4 className="text-md font-semibold mb-2 text-gray-800">Benefits:</h4>
                 <ul className="list-disc ml-6 text-gray-700 text-sm space-y-1">
@@ -203,7 +196,6 @@ const Insights = () => {
                   ))}
                 </ul>
               </div>
-
               <div className="mt-4 text-sm text-gray-700 leading-relaxed space-y-2">
                 <p><strong>Soil:</strong> {cropInfo.insights.soil}</p>
                 <p><strong>pH Range:</strong> {cropInfo.insights.pH}</p>
@@ -214,23 +206,8 @@ const Insights = () => {
               </div>
             </div>
           )}
-
-          {/* ✅ Show backend route */}
-          {lat && lon && (
-            <div className="mt-8 text-sm text-gray-500 text-center">
-              <p className="italic">
-                Data fetched from:{" "}
-                <code className="bg-gray-100 px-2 py-1 rounded">
-                  {`${process.env.NEXT_PUBLIC_BACKEND_URL}/get-crop-recommendation?lat=${lat}&lon=${lon}`}
-                </code>
-              </p>
-            </div>
-          )}
         </div>
       )}
-
-
-        
     </section>
   );
 };
