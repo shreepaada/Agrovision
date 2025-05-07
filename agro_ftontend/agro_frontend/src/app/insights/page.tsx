@@ -181,9 +181,8 @@ const Insights = () => {
             <div className="mt-6 bg-gray-100 p-6 rounded-lg">
               <h3 className="text-xl font-semibold text-green-600">🌱 Recommended Crop</h3>
               <h2 className="text-2xl font-bold text-center text-green-700 mt-4 mb-2">
-  {cropInfo.name}
-</h2>
-
+                {cropInfo.name}
+              </h2>
 
               <div className="mt-4 flex flex-wrap gap-4 justify-center">
                 {cropInfo.images.map((img, i) => (
@@ -215,8 +214,23 @@ const Insights = () => {
               </div>
             </div>
           )}
+
+          {/* ✅ Show backend route */}
+          {lat && lon && (
+            <div className="mt-8 text-sm text-gray-500 text-center">
+              <p className="italic">
+                Data fetched from:{" "}
+                <code className="bg-gray-100 px-2 py-1 rounded">
+                  {`${process.env.NEXT_PUBLIC_BACKEND_URL}/get-crop-recommendation?lat=${lat}&lon=${lon}`}
+                </code>
+              </p>
+            </div>
+          )}
         </div>
       )}
+
+
+        
     </section>
   );
 };
