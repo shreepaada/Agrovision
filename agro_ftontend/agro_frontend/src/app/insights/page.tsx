@@ -295,15 +295,19 @@ const Insights = () => {
             </div>
           )}
           {ndviValue > 0 && cropInfo && otherCrops.length > 0 && (
-            <div className="mt-6 bg-white p-4 rounded shadow-sm">
-              <h4 className="text-md font-semibold mb-2 text-gray-800">Alternative crops:</h4>
-              <ul className="list-disc ml-6 text-gray-700 text-sm space-y-1">
-                {otherCrops.map((crop, index) => (
-                  <li key={index}>{crop}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+
+  <div className="mt-6 bg-white p-4 rounded shadow-sm">
+    <h4 className="text-md font-semibold mb-2 text-gray-800">Alternative crops:</h4>
+    <ul className="list-disc ml-6 text-gray-700 text-sm space-y-1">
+      {otherCrops.map((crop, index) => (
+        <li key={index}>{crop}</li>
+        // insights
+      ))}
+    </ul>
+  </div>
+)}
+
+
         </div>
       )}
     </section>
