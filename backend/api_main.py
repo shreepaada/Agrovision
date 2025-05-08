@@ -60,7 +60,7 @@ soil_default_values = {
 # Authenticate and initialize GEE using Service Account
 try:
     credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-    
+
     if credentials_path and os.path.exists(credentials_path):
         print(f"✅ Found GEE credentials at {credentials_path}")
 
@@ -75,15 +75,15 @@ except Exception as e:
 
 def get_ndvi(lat, lon, date='2024-03-01'):
     point = ee.Geometry.Point(lon, lat)
-    
+
     dataset = ee.ImageCollection('MODIS/061/MOD13A1') \
         .filterBounds(point) \
         .filterDate(ee.Date(date), ee.Date(date).advance(16, 'day')) \
         .select('NDVI')
-    
+
     image_list = dataset.toList(dataset.size())
     image_count = image_list.size().getInfo()
-    
+
     if image_count == 0:
         logging.warning("No MODIS NDVI images found for this location and date range.")
         return None
@@ -142,21 +142,22 @@ def get_soil_nitrogen(lat, lon):
 def get_soil_features_with_fallback(lat, lon, api_key):
     ph_value = get_soil_ph(lat, lon)
     nitrogen_value = get_soil_nitrogen(lat, lon)
-    
+
     if ph_value is not None and nitrogen_value is not None:
         return {"pH": ph_value, "Nitrogen": nitrogen_value}
-    
+
     logging.info("Falling back to default state-wise soil values...")
     state_name = get_state_opencage(lat, lon, api_key)
-    
+
     if state_name and state_name in soil_default_values:
         return {
             "pH": ph_value if ph_value is not None else soil_default_values[state_name]["pH"],
             "Nitrogen": nitrogen_value if nitrogen_value is not None else soil_default_values[state_name]["Nitrogen"]
         }
-    
+
     logging.warning("State not found in default values. Returning None.")
     return {"pH": None, "Nitrogen": None}
+
 
 # def get_weather(lat, lon, start_date='2024-03-01', end_date='2024-03-01'):
 #     url = f"https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,RH2M,PRECTOTCORR&community=AG&longitude={lon}&latitude={lat}&start={start_date.replace('-', '')}&end={end_date.replace('-', '')}&format=JSON"
@@ -186,7 +187,9 @@ def get_weather(lat, lon):
         data = response.json()
     
         if 'properties' in data:
+            
             return {
+                
                 "temperature": data['properties']['parameter']['T2M']['ANN'],  # °C (Annual average)
                 "humidity": data['properties']['parameter']['RH2M']['ANN'],  # % (Annual average)
                 "rainfall": (data['properties']['parameter']['PRECTOTCORR']['ANN'] * 30)  # mm/day (Annual average)
@@ -209,6 +212,7 @@ def get_crop_features(lat, lon, api_key, date='2024-03-01'):
         "Rainfall (mm)": weather['rainfall'] if weather else None
     }
 
+
 # Load the LightGBM model
 model_path = "LightGBM.pkl"
 if not os.path.exists(model_path):
@@ -226,35 +230,37 @@ def get_crop_recommendation():
         # Parse query parameters
         lat = float(request.args.get('lat'))
         lon = float(request.args.get('lon'))
-        
+
         # Log the request
         logging.info(f"Received request: lat={lat}, lon={lon}")
-        
+
         # Fetch crop features
         api_key = os.getenv("OPENCAGE_API_KEY")
         features = get_crop_features(lat, lon, api_key)
-        
+
         if not features:
             return jsonify({"error": "Failed to fetch crop features"}), 500
-        
+
         # Prepare input for the model
         received_values = [value for key, value in features.items() if key != 'NDVI']
         received_array = np.array(received_values).reshape(1, -1)
-        
+
         # Predict the crop
+        
         if LightGBM is None:
             return jsonify({"error": "Model file not found. Cannot make predictions."}), 500
+
         
         prediction = LightGBM.predict(received_array)[0]
-        
+
         # Add prediction to the response
         features["Recommended Crop"] = prediction
-        
+
         # Log the response
         logging.info(f"Returning response: {features}")
-        
+
         return jsonify(features)
-    
+
     except ValueError:
         logging.error("Invalid latitude or longitude provided.")
         return jsonify({"error": "Invalid latitude or longitude"}), 400
@@ -264,60 +270,11 @@ def get_crop_recommendation():
     except Exception as e:
         logging.error(f"Error processing request: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
-@app.route('/get-top-3-crops', methods=['GET'])
-def get_top_3_crops():
-    try:
-        lat = float(request.args.get('lat'))
-        lon = float(request.args.get('lon'))
-
-        logging.info(f"🔍 Predicting top 3 crops for lat={lat}, lon={lon}")
-        api_key = os.getenv("OPENCAGE_API_KEY")
-        features = get_crop_features(lat, lon, api_key)
-
-        if not features or any(v is None for v in features.values()):
-            return jsonify({"error": "Failed to fetch complete feature data"}), 500
-
-        received_values = [value for key, value in features.items() if key != "NDVI"]
-        received_array = np.array(received_values).reshape(1, -1)
-
-        if LightGBM is None:
-            return jsonify({"error": "Model file not loaded"}), 500
-
-        probs = LightGBM.predict_proba(received_array)[0]
-        classes = LightGBM.classes_
-
-        sorted_indices = np.argsort(probs)[::-1]
-        top_crop = classes[sorted_indices[0]]
-        additional_crops = [classes[i] for i in sorted_indices[1:4]]
-
-        result = {
-            "NDVI": features["NDVI"],
-            "Soil pH": features["Soil pH"],
-            "Soil Nitrogen": features["Soil Nitrogen"],
-            "Temperature (°C)": features["Temperature (°C)"],
-            "Humidity (%)": features["Humidity (%)"],
-            "Rainfall (mm)": features["Rainfall (mm)"],
-            "Top Recommended Crop": top_crop,
-            "Additional Crop Suggestions": additional_crops
-        }
-
-        logging.info(f"✅ Top 3 crop prediction result: {result}")
-        return jsonify(result)
-
-    except ValueError:
-        logging.error("❌ Invalid lat/lon provided.")
-        return jsonify({"error": "Invalid latitude or longitude"}), 400
-    except Exception as e:
-        logging.error(f"❌ Error in /get-top-3-crops: {e}")
-        return jsonify({"error": "Internal Server Error"}), 500
 
 if __name__ == "__main__":  
     port = int(os.getenv("PORT", "10000"))  # Default to 10000 for Render  
     print(f"✅ Starting server on port {port}...")  
     app.run(host="0.0.0.0", port=port, debug=False)  # Ensure debug=False for production  
-
-
-
 
 # if __name__ == "__main__":
 #     lat, lon = 12.6168187, 77.4426732
@@ -388,17 +345,17 @@ if __name__ == "__main__":
 
 # def get_ndvi(lat, lon, date='2024-03-01'):
 #     point = ee.Geometry.Point(lon, lat)
-    
+
 #     # Use the latest MODIS NDVI dataset
 #     dataset = ee.ImageCollection('MODIS/061/MOD13A1') \
 #         .filterBounds(point) \
 #         .filterDate(ee.Date(date), ee.Date(date).advance(16, 'day')) \
 #         .select('NDVI')
-    
+
 #     # Check if dataset contains images
 #     image_list = dataset.toList(dataset.size())
 #     image_count = image_list.size().getInfo()
-    
+
 #     if image_count == 0:
 #         print("No MODIS NDVI images found for this location and date range.")
 #         return None
@@ -422,7 +379,7 @@ if __name__ == "__main__":
 #     url = f"https://api.opencagedata.com/geocode/v1/json?q={lat}+{lon}&key={api_key}"
 #     response = requests.get(url)
 #     data = response.json()
-    
+
 #     if data["status"]["code"] == 200:
 #         for component in data["results"][0]["components"]:
 #             if "state" in data["results"][0]["components"]:
@@ -441,25 +398,25 @@ if __name__ == "__main__":
 # #         (10.5667, 72.6417),  # Kavaratti
 # #         (11.9139, 79.8145),  # Puducherry city
 # #     ]
-    
+
 # #     states = set()
-    
+
 # #     for lat, lon in coordinates:
 # #         state = get_state_opencage(lat, lon, api_key)
 # #         if state != "State not found":
 # #             states.add(state)
-    
+
 # #     return states
 
 # def get_soil_ph(lat, lon):
 #     url = f"https://rest.isric.org/soilgrids/v2.0/properties/query?lon={lon}&lat={lat}&property=phh2o&depth=0-5cm&value=mean"
-    
+
 #     response = requests.get(url)
-    
+
 #     if response.status_code != 200:
 #         print(f"Error: Received status code {response.status_code} from SoilGrids API")
 #         return None
-    
+
 #     try:
 #         data = response.json()
 #         print("SoilGrids API Response:", data)  # Debugging
@@ -471,7 +428,7 @@ if __name__ == "__main__":
 #     if 'properties' in data and 'layers' in data['properties']:
 #         layer = data['properties']['layers'][0]
 #         depth = layer['depths'][0]
-        
+
 #         if 'values' in depth and 'mean' in depth['values']:
 #             ph = depth['values']['mean']
 #             if ph is not None:
@@ -486,13 +443,13 @@ if __name__ == "__main__":
 
 # def get_soil_nitrogen(lat, lon):
 #     url = f"https://rest.isric.org/soilgrids/v2.0/properties/query?lon={lon}&lat={lat}&property=nitrogen&depth=0-5cm&value=mean"
-    
+
 #     response = requests.get(url)
-    
+
 #     if response.status_code != 200:
 #         print(f"Error: Received status code {response.status_code} from SoilGrids API")
 #         return None
-    
+
 #     try:
 #         data = response.json()
 #         print("SoilGrids API Response:", data)  # Debugging
@@ -504,7 +461,7 @@ if __name__ == "__main__":
 #     if 'properties' in data and 'layers' in data['properties']:
 #         layer = data['properties']['layers'][0]
 #         depth = layer['depths'][0]
-        
+
 #         if 'values' in depth and 'mean' in depth['values']:
 #             nitrogen = depth['values']['mean']
 #             if nitrogen is not None:
@@ -519,34 +476,34 @@ if __name__ == "__main__":
 # def get_soil_features_with_fallback(lat, lon, api_key):
 #     ph_value = get_soil_ph(lat, lon)
 #     nitrogen_value = get_soil_nitrogen(lat, lon)
-    
+
 #     if ph_value is not None and nitrogen_value is not None:
 #         return {"pH": ph_value, "Nitrogen": nitrogen_value}
-    
+
 #     print("Falling back to default state-wise soil values...")
 #     state_name = get_state_opencage(lat, lon, api_key)
-    
+
 #     if state_name and state_name in soil_default_values:
 #         return {
 #             "pH": ph_value if ph_value is not None else soil_default_values[state_name]["pH"],
 #             "Nitrogen": nitrogen_value if nitrogen_value is not None else soil_default_values[state_name]["Nitrogen"]
 #         }
-    
+
 #     print("Warning: State not found in default values. Returning None.")
 #     return {"pH": None, "Nitrogen": None}
 
 
 # def get_weather(lat, lon, start_date='2024-03-01', end_date='2024-03-01'):
 #     url = f"https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,RH2M,PRECTOTCORR&community=AG&longitude={lon}&latitude={lat}&start={start_date.replace('-', '')}&end={end_date.replace('-', '')}&format=JSON"
-    
+
 #     response = requests.get(url)
 #     data = response.json()
-    
+
 #     if 'properties' in data:
 #         temperature = data['properties']['parameter']['T2M'][start_date.replace('-', '')]
 #         humidity = data['properties']['parameter']['RH2M'][start_date.replace('-', '')]
 #         rainfall = data['properties']['parameter']['PRECTOTCORR'][start_date.replace('-', '')]
-        
+
 #         return {
 #             "temperature": temperature,  # °C
 #             "humidity": humidity,  # %
