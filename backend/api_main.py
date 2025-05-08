@@ -270,6 +270,66 @@ def get_crop_recommendation():
     except Exception as e:
         logging.error(f"Error processing request: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
+@app.route('/get-top-3-crops', methods=['GET'])
+def get_top_3_crops():
+    try:
+        lat = float(request.args.get('lat'))
+        lon = float(request.args.get('lon'))
+
+        logging.info(f"Received request for top 3 crops: lat={lat}, lon={lon}")
+
+        # Get features
+        api_key = os.getenv("OPENCAGE_API_KEY")
+        features = get_crop_features(lat, lon, api_key)
+
+        if not features:
+            return jsonify({"error": "Failed to fetch crop features"}), 500
+
+        # Prepare model input (excluding NDVI)
+        input_values = [value for key, value in features.items() if key != 'NDVI']
+        input_array = np.array(input_values).reshape(1, -1)
+
+        # Load model
+        if LightGBM is None:
+            return jsonify({"error": "Model file not found. Cannot make predictions."}), 500
+
+        # Predict probabilities
+        probabilities = LightGBM.predict_proba(input_array)[0]
+        classes = LightGBM.classes_
+
+        # Sort and extract top 3
+        sorted_indices = np.argsort(probabilities)[::-1]
+        top_3_indices = sorted_indices[:3]
+        top_3_crops = [classes[i] for i in top_3_indices]
+        top_3_probs = [float(probabilities[i]) for i in top_3_indices]
+
+        # Return response
+        result = {
+            "NDVI": features.get("NDVI"),
+            "Soil pH": features.get("Soil pH"),
+            "Soil Nitrogen": features.get("Soil Nitrogen"),
+            "Temperature (°C)": features.get("Temperature (°C)"),
+            "Humidity (%)": features.get("Humidity (%)"),
+            "Rainfall (mm)": features.get("Rainfall (mm)"),
+            "Top 3 Crops": [
+                {"crop": top_3_crops[i], "probability": round(top_3_probs[i], 4)}
+                for i in range(3)
+            ]
+        }
+
+        logging.info(f"Returning Top 3 Crop Recommendations: {result['Top 3 Crops']}")
+        return jsonify(result)
+
+    except ValueError:
+        logging.error("Invalid latitude or longitude provided.")
+        return jsonify({"error": "Invalid latitude or longitude"}), 400
+    except FileNotFoundError:
+        logging.error("Model file not found.")
+        return jsonify({"error": "Model file not found"}), 500
+    except Exception as e:
+        logging.exception("Unexpected error while predicting top 3 crops")
+        return jsonify({"error": "Internal Server Error"}), 500
+
 
 if __name__ == "__main__":  
     port = int(os.getenv("PORT", "10000"))  # Default to 10000 for Render  
