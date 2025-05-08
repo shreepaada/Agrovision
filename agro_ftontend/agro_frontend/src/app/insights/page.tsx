@@ -10,6 +10,8 @@ const Insights = () => {
   const [lon, setLon] = useState("");
   const [error, setError] = useState("");
   const [cropInfo, setCropInfo] = useState<CropInfo | null>(null);
+  const [otherCrops, setOtherCrops] = useState<string[]>([]);
+
 
   const fetchInsights = async () => {
     if (!lat || !lon) {
@@ -47,6 +49,7 @@ const Insights = () => {
         } else {
           console.warn(`No crop data found for: "${recommendedCrop}"`);
         }
+        fetchTopCrops(lat, lon);
       }
     } catch (err: any) {
       setError(err.message);
@@ -54,6 +57,28 @@ const Insights = () => {
       setLoading(false);
     }
   };
+  const fetchTopCrops = async (lat: string, lon: string) => {
+    const apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/get-top-3-crops?lat=${lat}&lon=${lon}`;
+    console.log("Fetching top 3 crops from:", apiUrl);
+  
+    try {
+      const response = await fetch(apiUrl);
+      if (!response.ok) {
+        throw new Error("Failed to fetch top 3 crops");
+      }
+  
+      const result = await response.json();
+      if (result && result["Top 3 Crops"]) {
+        const allTopCrops = result["Top 3 Crops"].map((item: any) => item.crop);
+        const additionalCrops = allTopCrops.slice(1, 4); // Skip the main crop
+        setOtherCrops(additionalCrops);
+      }
+    } catch (error) {
+      console.error("Error fetching top crops:", error);
+      setOtherCrops([]);
+    }
+  };
+  
 
   const renderNDVIMessage = (ndvi: number | null) => {
     if (ndvi === null || isNaN(ndvi)) return null;
@@ -215,7 +240,19 @@ const Insights = () => {
               </div>
             </div>
           )}
+          {ndviValue > 0 && cropInfo && otherCrops.length > 0 && (
+  <div className="mt-6 bg-white p-4 rounded shadow-sm">
+    <h4 className="text-md font-semibold mb-2 text-gray-800">Alternative crops:</h4>
+    <ul className="list-disc ml-6 text-gray-700 text-sm space-y-1">
+      {otherCrops.map((crop, index) => (
+        <li key={index}>{crop}</li>
+      ))}
+    </ul>
+  </div>
+)}
+
         </div>
+        
       )}
     </section>
   );
