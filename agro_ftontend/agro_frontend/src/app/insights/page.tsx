@@ -1,8 +1,11 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import allCrops, { CropInfo } from "./cropdata";
-
+declare global {
+  interface Window {
+    initMap: () => void;
+  }
+}
 const Insights = () => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -12,21 +15,76 @@ const Insights = () => {
   const [cropInfo, setCropInfo] = useState<CropInfo | null>(null);
   const [otherCrops, setOtherCrops] = useState<string[]>([]);
 
+  // Load Google Maps Script
+  useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      !document.getElementById("googleMapsScript")
+    ) {
+      const script = document.createElement("script");
+      script.id = "googleMapsScript";
+      script.src = `https://maps.googleapis.com/maps/api/js?key= ${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&callback=initMap`;
+      script.async = true;
+      script.defer = true;
+      window.initMap = initMap;
+      document.head.appendChild(script);
+    }
+  }, []);
+
+  // Initialize Google Map
+  const initMap = () => {
+    const defaultLocation = { lat: 20, lng: 77 };
+    const map = new google.maps.Map(document.getElementById("map")!, {
+      center: defaultLocation,
+      zoom: 5,
+    });
+
+    let marker: google.maps.Marker | null = null;
+
+    map.addListener("click", (event: google.maps.MapMouseEvent) => {
+      const latLng = event.latLng;
+      if (latLng) {
+        const latitude = latLng.lat();
+        const longitude = latLng.lng();
+
+        setLat(latitude.toString());
+        setLon(longitude.toString());
+
+        if (marker) {
+          marker.setPosition({
+            lat: parseFloat(latitude.toString()),
+            lng: parseFloat(longitude.toString())
+          });
+        } else {
+          marker = new google.maps.Marker({
+            position: {
+              lat: parseFloat(latitude.toString()),
+              lng: parseFloat(longitude.toString())
+            },
+            map,
+            title: "Selected Location",
+          });
+        }
+
+        map.setCenter({
+          lat: parseFloat(latitude.toString()),
+          lng: parseFloat(longitude.toString())
+        });
+      }
+    });
+  };
 
   const fetchInsights = async () => {
     if (!lat || !lon) {
       setError("Please enter valid latitude and longitude.");
       return;
     }
-
     setLoading(true);
     setError("");
     setData(null);
     setCropInfo(null);
-
     const apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/get-crop-recommendation?lat=${lat}&lon=${lon}`;
     console.log("Fetching from:", apiUrl);
-
     try {
       const response = await fetch(apiUrl);
 
@@ -57,16 +115,17 @@ const Insights = () => {
       setLoading(false);
     }
   };
+
   const fetchTopCrops = async (lat: string, lon: string) => {
     const apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/get-top-3-crops?lat=${lat}&lon=${lon}`;
     console.log("Fetching top 3 crops from:", apiUrl);
-  
+
     try {
       const response = await fetch(apiUrl);
       if (!response.ok) {
         throw new Error("Failed to fetch top 3 crops");
       }
-  
+
       const result = await response.json();
       if (result && result["Top 3 Crops"]) {
         const allTopCrops = result["Top 3 Crops"].map((item: any) => item.crop);
@@ -78,7 +137,7 @@ const Insights = () => {
       setOtherCrops([]);
     }
   };
-  
+
 
   const renderNDVIMessage = (ndvi: number | null) => {
     if (ndvi === null || isNaN(ndvi)) return null;
@@ -101,27 +160,25 @@ const Insights = () => {
             The coordinates you entered indicate a barren land. Just because this land currently has little to no vegetation, doesn’t mean all hope is lost! More often than not, we simply haven’t unlocked the land’s full potential. Here are some methods to improve its quality:
           </p>
           <ul className="text-sm text-gray-700 list-disc ml-6 mt-2 space-y-4 leading-relaxed">
-  <li>
-    <span className="text-black font-semibold">Assessing the Root Cause:</span> Barren land can result from factors such as soil degradation, inadequate water availability, or nutrient deficiency. Conducting comprehensive soil tests, analyzing rainfall patterns, and identifying the root causes of barrenness will help in designing a targeted approach for restoration.
-  </li>
-  <li>
-    <span className="text-black font-semibold">Soil Restoration and Fertility Improvement:</span> To enhance barren land, soil restoration techniques play a pivotal role. This involves various activities such as mulching, composting, and adding organic matter to improve soil structure and fertility. Composting green waste, livestock manure, or food scraps provides rich nutrients that encourage vegetation growth. Additionally, implementing cover cropping and crop rotation helps prevent erosion, reduces weed growth, and enriches the soil.
-  </li>
-  <li>
-    <span className="text-black font-semibold">Water Management and Conservation:</span> Implementing water management techniques such as rainwater harvesting, contour farming, or constructing irrigation channels can enhance water availability for vegetation growth. Utilizing efficient irrigation methods, like drip irrigation or precision sprinklers, minimizes water wastage and improves plant survival rates.
-  </li>
-  <li>
-    <span className="text-black font-semibold">Native Plant Species Introduction:</span> Native plants are adapted to local climatic conditions and possess the ecological resilience necessary for thriving in a specific ecosystem. These plants help improve soil quality, prevent erosion, attract pollinators, and restore the balance of the local ecosystem by providing food and shelter for various wildlife species.
-  </li>
-  <li>
-    <span className="text-black font-semibold">Conservation and Land Management:</span> Preserving and conserving the regenerated vegetation and biodiversity is essential for the long-term success of barren land restoration. This can be achieved through sustainable land management practices, such as controlled grazing, responsible land use planning, and the establishment of protected areas. Involving local communities, educating them about the importance of biodiversity, and engaging them in conservation efforts fosters a sense of ownership and ensures the longevity of restoration initiatives.
-  </li>
-  <li>
-    <span className="text-black font-semibold">Technological Innovations:</span> Implementing advanced techniques like hydroseeding, where a mixture of seeds, fertilizers, and mulch is sprayed onto the land, accelerates vegetation growth. Similarly, using drone technology to identify areas most in need of restoration and monitoring their progress enables efficient use of resources and maximizes the effectiveness of restoration efforts.
-  </li>
-</ul>
-
-
+          <li>
+              <span className="text-black font-semibold">Assessing the Root Cause:</span> Barren land can result from factors such as soil degradation, inadequate water availability, or nutrient deficiency. Conducting comprehensive soil tests, analyzing rainfall patterns, and identifying the root causes of barrenness will help in designing a targeted approach for restoration.
+            </li>
+            <li>
+              <span className="text-black font-semibold">Soil Restoration and Fertility Improvement:</span> To enhance barren land, soil restoration techniques play a pivotal role. This involves various activities such as mulching, composting, and adding organic matter to improve soil structure and fertility. Composting green waste, livestock manure, or food scraps provides rich nutrients that encourage vegetation growth. Additionally, implementing cover cropping and crop rotation helps prevent erosion, reduces weed growth, and enriches the soil.
+            </li>
+            <li>
+              <span className="text-black font-semibold">Water Management and Conservation:</span> Implementing water management techniques such as rainwater harvesting, contour farming, or constructing irrigation channels can enhance water availability for vegetation growth. Utilizing efficient irrigation methods, like drip irrigation or precision sprinklers, minimizes water wastage and improves plant survival rates.
+            </li>
+            <li>
+              <span className="text-black font-semibold">Native Plant Species Introduction:</span> Native plants are adapted to local climatic conditions and possess the ecological resilience necessary for thriving in a specific ecosystem. These plants help improve soil quality, prevent erosion, attract pollinators, and restore the balance of the local ecosystem by providing food and shelter for various wildlife species.
+            </li>
+            <li>
+              <span className="text-black font-semibold">Conservation and Land Management:</span> Preserving and conserving the regenerated vegetation and biodiversity is essential for the long-term success of barren land restoration. This can be achieved through sustainable land management practices, such as controlled grazing, responsible land use planning, and the establishment of protected areas. Involving local communities, educating them about the importance of biodiversity, and engaging them in conservation efforts fosters a sense of ownership and ensures the longevity of restoration initiatives.
+            </li>
+            <li>
+              <span className="text-black font-semibold">Technological Innovations:</span> Implementing advanced techniques like hydroseeding, where a mixture of seeds, fertilizers, and mulch is sprayed onto the land, accelerates vegetation growth. Similarly, using drone technology to identify areas most in need of restoration and monitoring their progress enables efficient use of resources and maximizes the effectiveness of restoration efforts.
+            </li>
+          </ul>
           <p className="text-gray-600 text-sm mt-2 font-semibold">
             Continue reading below to find a crop most suited for your land!
           </p>
@@ -151,11 +208,11 @@ const Insights = () => {
   };
 
   const ndviValue = data?.NDVI ?? null;
-
   return (
     <section className="w-full px-8 py-12 max-w-6xl mx-auto">
       <h2 className="text-3xl md:text-5xl font-semibold mb-6">Agricultural Insights 🌾</h2>
 
+      {/* Latitude & Longitude Inputs */}
       <div className="flex flex-col md:flex-row items-center gap-4">
         <input
           type="number"
@@ -179,6 +236,18 @@ const Insights = () => {
         </button>
       </div>
 
+      {/* Interactive Map */}
+      <div className="mt-6">
+        <h3 className="text-lg font-semibold mb-2">📍 Select Location on Map</h3>
+        <div id="map" style={{ height: "400px", width: "100%" }} className="rounded-lg shadow-md"></div>
+        {lat && lon && (
+          <p className="mt-2 text-sm text-gray-600">
+            Selected Coordinates: <strong>{lat}, {lon}</strong>
+          </p>
+        )}
+      </div>
+
+      {/* Loading / Error / Results */}
       {loading && <p className="mt-4 text-gray-500">Loading insights...</p>}
       {error && <p className="mt-4 text-red-500">{error}</p>}
 
