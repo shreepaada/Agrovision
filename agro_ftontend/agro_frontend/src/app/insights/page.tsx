@@ -180,9 +180,10 @@ const Insights = () => {
           {ndviValue > 0 && cropInfo && (
             <div className="mt-6 bg-gray-100 p-6 rounded-lg">
               <h3 className="text-xl font-semibold text-green-600">🌱 Recommended Crop</h3>
+              
               <h2 className="text-2xl font-bold text-center text-green-700 mt-4 mb-2">
-  {cropInfo.name}
-</h2>
+                {cropInfo.name}
+              </h2>
 
 
               <div className="mt-4 flex flex-wrap gap-4 justify-center">
@@ -205,6 +206,7 @@ const Insights = () => {
                 </ul>
               </div>
 
+              
               <div className="mt-4 text-sm text-gray-700 leading-relaxed space-y-2">
                 <p><strong>Soil:</strong> {cropInfo.insights.soil}</p>
                 <p><strong>pH Range:</strong> {cropInfo.insights.pH}</p>
