@@ -272,28 +272,17 @@ def get_top_3_crops():
 
         logging.info(f"🔍 Predicting top 3 crops for lat={lat}, lon={lon}")
         api_key = os.getenv("OPENCAGE_API_KEY")
-
-        # Use same fallback logic as single crop route
         features = get_crop_features(lat, lon, api_key)
 
-        # Log raw features
-        logging.info(f"Raw crop features: {features}")
+        if not features or any(v is None for v in features.values()):
+            return jsonify({"error": "Failed to fetch complete feature data"}), 500
 
-        if not features:
-            return jsonify({"error": "Failed to fetch feature data"}), 500
-
-        # Ensure fallback defaults (mimic single crop route)
         received_values = [value for key, value in features.items() if key != "NDVI"]
-        if any(v is None for v in received_values):
-            logging.warning("❌ Some values missing in received_values, skipping prediction.")
-            return jsonify({"error": "Missing data in crop features"}), 500
-
         received_array = np.array(received_values).reshape(1, -1)
 
         if LightGBM is None:
-            return jsonify({"error": "Model not available"}), 500
+            return jsonify({"error": "Model file not loaded"}), 500
 
-        # Predict probabilities for top 3 crops
         probs = LightGBM.predict_proba(received_array)[0]
         classes = LightGBM.classes_
 
@@ -321,7 +310,6 @@ def get_top_3_crops():
     except Exception as e:
         logging.error(f"❌ Error in /get-top-3-crops: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
-
 
 if __name__ == "__main__":  
     port = int(os.getenv("PORT", "10000"))  # Default to 10000 for Render  
