@@ -23,7 +23,8 @@ const Insights = () => {
     ) {
       const script = document.createElement("script");
       script.id = "googleMapsScript";
-      script.src = `https://maps.googleapis.com/maps/api/js?key= ${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&callback=initMap`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&callback=initMap`;
+
       script.async = true;
       script.defer = true;
       window.initMap = initMap;
