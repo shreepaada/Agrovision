@@ -246,6 +246,7 @@ const Insights = () => {
     <ul className="list-disc ml-6 text-gray-700 text-sm space-y-1">
       {otherCrops.map((crop, index) => (
         <li key={index}>{crop}</li>
+        // insights
       ))}
     </ul>
   </div>
