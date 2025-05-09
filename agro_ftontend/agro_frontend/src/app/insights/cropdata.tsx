@@ -53,9 +53,9 @@ export const allCrops: Record<string, CropInfo> = {
             technology: "Use of drip irrigation, soil moisture sensors, and seed treatment with Rhizobium bacteria enhances productivity."
         },
         images: [
-            "/crops/pigeonpeas1.jpeg", // Image 1
-            "/crops/pigeonpeas2.jpeg", // Image 2
-            "/crops/pigeonpeas3.jpeg"   // Image 3
+            "/crops/pigeonpea1.jpeg", // Image 1
+            "/crops/pigeonpea2.jpeg", // Image 2
+            "/crops/pigeonpea3.jpeg"   // Image 3
         ]
     },
     coffee: {
