@@ -9,33 +9,33 @@ AgroVision integrates and processes multi-dimensional environmental data from gl
 Geographic coordinates are entered manually or selected via an interactive map.
 
 ###### Data Collection:
-NDVI (Vegetation Health) via MODIS using Google Earth Engine
-Soil parameters (pH and nitrogen) from ISRIC SoilGrids
+NDVI (Vegetation Health) via MODIS using Google Earth Engine  
+Soil parameters (pH and nitrogen) from ISRIC SoilGrids  
 Weather data (temperature, humidity, rainfall) from NASA POWER
 
 ###### Processing Pipeline:
-All parameters are normalized and integrated.
+All parameters are normalized and integrated.  
 Passed into a trained LightGBM model for crop prediction.
 
 ###### Output Generation:
-Top crop recommendation with precision farming insights (irrigation, fertilizers, alt. crops).
+Top crop recommendation with precision farming insights (irrigation, fertilizers, alt. crops).  
 Rehabilitation advice for barren or low-NDVI areas.
 
 ## Tech Stack
 ###### Frontend: 
-HTML, CSS, JavaScript
+HTML, CSS, JavaScript  
 Hosted on: Vercel
 
 ###### Backend: 
-Python (Flask)
-API calls for geospatial data processing
+Python (Flask)  
+API calls for geospatial data processing  
 Deployed on: Render
 
 ###### Machine Learning: 
 LightGBM (trained on crop-environment suitability dataset)
 
 ###### Data Sources / APIs:
-Google Earth Engine (MODIS)
+Google Earth Engine (MODIS)  
 ISRIC SoilGrids
 NASA POWER
 OpenCage Geocoder (fallback for soil data)
