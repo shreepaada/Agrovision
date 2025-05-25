@@ -43,3 +43,6 @@ ICFA crop dataset
 
 # System Design
 ![Design](https://github.com/user-attachments/assets/4c3cb6c8-4a85-4a9a-9508-cd01909bfde0)
+
+# Detailed tutorial
+[Click here](https://code2tutorial.com/tutorial/f0a4b02a-f08c-4e9e-be94-c2817f4d0f18/index.md)
